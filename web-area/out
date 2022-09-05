@@ -1,0 +1,44 @@
+
+CONTENT_LENGTH=179
+CONTENT_TYPE=multipart/form-data; boundary=---------------------------299144911727878228763415194987
+CONTEXT_DOCUMENT_ROOT=/var/www/beg
+CONTEXT_PREFIX=
+DOCUMENT_ROOT=/var/www/beg
+GATEWAY_INTERFACE=CGI/1.1
+HTTPS=on
+HTTP_ACCEPT=*/*
+HTTP_ACCEPT_ENCODING=gzip, deflate, br
+HTTP_ACCEPT_LANGUAGE=en
+HTTP_CONNECTION=keep-alive
+HTTP_DNT=1
+HTTP_HOST=begriffin.com
+HTTP_ORIGIN=https://begriffin.com
+HTTP_REFERER=https://begriffin.com/s/s.html
+HTTP_SEC_FETCH_DEST=empty
+HTTP_SEC_FETCH_MODE=cors
+HTTP_SEC_FETCH_SITE=same-origin
+HTTP_USER_AGENT=Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:104.0) Gecko/20100101 Firefox/104.0
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+PWD=/var/www/beg/s
+QUERY_STRING=
+REMOTE_ADDR=157.131.200.34
+REMOTE_PORT=39942
+REQUEST_METHOD=POST
+REQUEST_SCHEME=https
+REQUEST_URI=/s/ach.cgi
+SCRIPT_FILENAME=/var/www/beg/s/ach.cgi
+SCRIPT_NAME=/s/ach.cgi
+SERVER_ADDR=166.84.136.67
+SERVER_ADMIN=hello@begriffin.com
+SERVER_NAME=begriffin.com
+SERVER_PORT=443
+SERVER_PROTOCOL=HTTP/1.1
+SERVER_SIGNATURE=<address>Apache/2.4.18 (Ubuntu) Server at begriffin.com Port 443</address>
+SERVER_SOFTWARE=Apache/2.4.18 (Ubuntu)
+SSL_TLS_SNI=begriffin.com
+STDIN
+-----------------------------299144911727878228763415194987
+Content-Disposition: form-data; name="search"
+
+jewe
+-----------------------------299144911727878228763415194987--

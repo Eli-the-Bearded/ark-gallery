@@ -1,0 +1,92 @@
+<!DOCTYPE HTML>
+<html><head>
+<title>Image Search</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style type=text/css><!--
+Body {background:white; color: black; }
+H1 { font-weight: bold; font-size: 18pt; }
+H2 { font-weight: normal; font-size: 18pt; }
+Input { margin: 0.5em; }
+:link { color: blue; } 
+:link:hover {color:red;}
+:link:visited {color:red;}
+--></style>
+<script src="hinter.js"></script>
+<link rel="stylesheet" href="hints.css">
+</head>
+<body>
+<h1>Image Search</h1>
+<div>
+<form action="/action/">
+<table>
+<tr><td></td><td colspan=2><input type=submit value=Search></td></tr>
+<tr><td><label for=loosetag>Loose tags?</label></td>
+    <td><input type=checkbox value=yes id=loosetag name=loosetag></td>
+    <td>Enables tag substring matches</td></tr>
+
+<tr><td><label for=limit>Per page limit</label></td>
+    <td colspan=2><input type=number value=50 id=limit name=limit size=3></td></tr>
+
+<tr><td><label for=outmode>Result type</label></td>
+    <td colspan=2><select id=outmode name=outmode>
+    <option value=all>All</option>
+    <option value=short>Short</option>
+    <option value=image>Image</option>
+    <option value=images>Images</option>
+    <option value=thumbs>Thumbs</option>
+    </select></td></tr>
+
+<tr><td><label for=anywhere0>Anywhere</label></td>
+    <td><span onClick="add('anywhere');">[+]</span></td>
+    <td><input type=text size=30 id=anywhere0 name=anywhere0></td></tr>
+
+<tr><td><label for=tag0>Tags</label></td>
+    <td><span onClick="add('tag');">[+]</span></td>
+    <td><input type=text size=30 id=tag0 name=tag0></td></tr>
+
+<tr><td><label for=title0>Title</label></td>
+    <td><span onClick="add('title');">[+]</span></td>
+    <td><input type=text size=30 id=title0 name=title0></td></tr>
+
+<tr><td><label for=desc0>Description</label></td>
+    <td><span onClick="add('desc');">[+]</span></td>
+    <td><input type=text size=30 id=desc0 name=desc0></td></tr>
+
+<tr><td><label for=nowhere0>No where</label></td>
+    <td><span onClick="add('nowhere');">[+]</span></td>
+    <td><input type=text size=30 id=nowhere0 name=nowhere0 value='hidethese'></td></tr>
+<tr><td><label for=xtag0>Exclude tag</label></td>
+    <td><span onClick="add('xtag');">[+]</span></td>
+    <td><input type=text size=30 id=xtag0 name=xtag0></td></tr>
+
+<tr><td><label for=date>Date substring</label></td>
+    <td></td>
+    <td><input type=text size=30 id=date name=date></td></tr>
+
+<tr><td></td><td colspan=2><input type=submit value=Search></td></tr>
+</table>
+</form>
+</div>
+<script>
+ac.attach({ target:document.getElementById("tag0"), data: "ach.cgi" });
+ac.attach({ target:document.getElementById("xtag0"), data: "ach.cgi" });
+
+let e={"tag":0,"xtag":0,"anywhere":0,"title":0,"desc":0,"nowhere":0};
+function add(f){ 
+ e[f]++;
+ it=document.createElement('input');
+ it.type="text";
+ it.size=30;
+ it.name=f+e[f];
+ it.placeholder=f+" "+e[f];
+ it.id=it.name;
+ wh=document.getElementById(f+0).parentNode;
+ wh.appendChild(it);
+ if((f === 'tag')||(f === 'xtag')) { 
+  ac.attach({ target: it, data: "ach.cgi" });
+ }
+};
+</script>
+</body>
+</html>

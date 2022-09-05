@@ -1,0 +1,34 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use utf8;
+use DBI;
+use JSON::PP;
+
+use vars qw( $rc
+	     $dbh $statement
+	     $ark_tag_search_statement
+	     $frag $tag @tags
+	     );
+
+$rc = do '/home/eli/photo-gallery/db-funcs.pm';
+if(!defined($rc)) { die "Failed to load db functions file\n"; }
+
+$frag = clean_tag($ARGV[0] or 'help');
+
+$dbh = dbconnect();
+
+$statement = $dbh->prepare( $ark_tag_search_statement );
+$statement->execute( "%$frag%" );
+# fetchall_arrayref returns a one element array for every row
+# the map removes the inner arrays
+my $result = $statement->fetchall_arrayref();
+@tags = map { $$_[0] } @$result;
+
+$rc  = $dbh->disconnect;
+print "Content-Type: application/json; charset=UTF-8\n";
+print "\n";
+print encode_json(\@tags);
+print "\n";
+
+__END__

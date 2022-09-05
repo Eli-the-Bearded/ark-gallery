@@ -1,0 +1,55 @@
+
+camera:0	map to _device_
+	example: Canon PowerShot SD870 IS
+date:0
+	example: 2009:01:19 09:53:54
+
+description:0
+	example: Scanned from a sketch in a thrift store book.
+	Can contain long lines, and \n for newlines.
+
+description:1
+	contains lists of photos used in hidethese mosaics
+
+dof:0
+	example: 0.27 m (0.54 - 0.81 m)
+
+gps:0
+	example: 40 deg 44' 55.02" N, 74 deg 0' 15.44" W
+	(same photo source as example for location:0)
+
+keywords:0
+keywords:1
+	different sources, same format, comma separated tags
+	example: Iceland, Keriđ, in hand
+
+location:0
+	example: 40.748616 N,74.004289 W
+	(same photo source as example for gps:0)
+
+location:1	map to _neighborhood_
+	neighborhood (neighbourhood)
+	example: Fisherman's Wharf
+
+location:2	map to _locality_
+	city (locality)
+	example: Carmel-by-the-Sea
+
+location:3	map to _county_
+	county
+	example: Manhattan
+
+location:4	map to _state_
+	state (region)
+	example: New Mexico
+
+location:5	map to _country_
+	country
+	example: United States
+
+tag:0
+	can appear multiple times, one tag per occurance
+	example: taken by beatrice
+
+title:0
+	example: sugar crystals at five weeks

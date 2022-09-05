@@ -1,0 +1,26 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use utf8;
+use DBI;
+
+use vars qw( $rc
+	     $dbh 
+	     $clean $id
+	     );
+
+$rc = do '/home/eli/photo-gallery/db-funcs.pm';
+if(!defined($rc)) { die "Failed to load db functions file\n"; }
+
+$dbh = dbconnect();
+
+while($tag = shift) {
+  $clean = clean_tag( $tag );
+
+  $id = find_or_create_tag($dbh, $tag);
+
+  print "$id\t$clean\t$tag\n"
+}
+
+$rc  = $dbh->disconnect;
+__END__

@@ -1,0 +1,26 @@
+.acWrap {
+  display: inline-block;
+  position: relative;
+}
+
+.acWrap .acSuggest {
+  position: absolute;
+  top: 100%; left: 1em;
+  z-index: 9;
+  width: 100%;
+  background: #ff8;
+  border: 1px solid #eee;
+  display: none;
+}
+.acWrap .acSuggest ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.acWrap .acSuggest ul li {
+  padding: 10px;
+}
+.acWrap .acSuggest ul li:hover {
+  background: #d9e7ff;
+  cursor: pointer;
+}

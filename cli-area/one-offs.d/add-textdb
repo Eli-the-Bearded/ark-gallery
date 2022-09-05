@@ -1,0 +1,146 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use utf8;
+use DBI;
+
+use vars qw( $rc
+	     $dbh $sth $gps $title $desc $exif
+	     $image_name $image_path $image_id $image_date
+	     $type $data
+	     @tags %tag_dedupe
+	     %seen
+	     );
+
+$rc = do '/home/eli/photo-gallery/db-funcs.pm';
+if(!defined($rc)) { die "Failed to load db functions file\n"; }
+
+$dbh = dbconnect();
+$sth = $dbh->prepare('
+	SELECT `image_id`, `image_path`, `image_date` FROM `ark_images`
+	WHERE `image_name` = ?;
+	');
+
+# image_id, loc_type, location
+#    catchall                                   type 0
+#    40.748616 N,74.004289 W                    type 1
+#    40 deg 44' 55.02" N, 74 deg 0' 15.44" W    type 2
+$gps = $dbh->prepare('
+	INSERT INTO `ark_location` VALUES (?, ?, ?);
+	');
+
+$title = $dbh->prepare('
+	INSERT INTO `ark_title` VALUES (?, ?);
+	');
+$desc = $dbh->prepare('
+	INSERT INTO `ark_description` VALUES (?, ?);
+	');
+
+$exif = $dbh->prepare('
+	INSERT INTO `ark_exif_other` VALUES (?, ?, ?);
+	');
+
+# tested with this
+$seen{1} = 1;
+
+while(<>) {
+  chomp;
+  if (/^\s*$/) {
+    if($image_path and !exists($seen{$image_id})) {
+      @tags = values %tag_dedupe;
+      add_tags_to_image($dbh, $image_id, $image_date, \@tags);
+      $seen{$image_id} ++;
+    }
+    undef($image_path);
+    undef($image_id);
+    undef(%tag_dedupe);
+    next;
+  }
+
+  ($image_name, $type, $data) = split(/\t/);
+
+  if (!defined($image_id)) {
+    $sth->execute( $image_name );
+    # at this stage of database life, image_name should be unique
+    my $result = $sth->fetchall_arrayref();
+    if (1 != scalar @$result) {
+       die "Line $., $image_id has wrong number of results @$result\n"
+    }
+
+    $image_id   = ${$$result[0]}[0];
+    $image_path = ${$$result[0]}[1];
+    $image_date = ${$$result[0]}[2];
+  }
+
+  # special tags made for these
+  if($type =~ /camera:0/) {
+    $data = "_device_ $data";
+    $_ = clean_tag($data);
+    $tag_dedupe{$_} = $data;
+    next;
+  }
+
+  if($type =~ /location:[1-5]/) {
+    $type =~ s/location:1/_neighborhood_/;
+    $type =~ s/location:2/_locality_/;
+    $type =~ s/location:3/_county_/;
+    $type =~ s/location:4/_state_/;
+    $type =~ s/location:5/_country_/;
+    $data = "$type $data";
+    $_ = clean_tag($data);
+    $tag_dedupe{$_} = $data;
+    next;
+  }
+
+  if($type =~ /tag:0/) {
+    $_ = clean_tag($data);
+    $tag_dedupe{$_} = $data;
+    next;
+  }
+
+  if($type =~ /keywords:[01]/) {
+    for my $tag (split(/,\s*/, $data)) {
+      $_ = clean_tag($tag);
+      $tag_dedupe{$_} = $tag;
+    }
+    next;
+  }
+
+
+  if($type =~ /dof:0/) {
+    next; # completed already
+#   $type = 'dof';
+#   if(!exists($seen{$image_id})) {
+#     $exif->execute($image_id, $type, $data);
+#   }
+#   $seen{$image_id} ++;
+  }
+
+  if($type =~ /title:0/) {
+    next; # completed already
+#   $title->execute($image_id, $data);
+  }
+  if($type =~ /description:0/) {
+    next; # completed already
+#   $desc->execute($image_id, $data);
+  }
+
+  if($type =~ /location:0|gps:0/) {
+    next; # completed already
+#   my $format = 0;
+#   # 40.748616 N,74.004289 W
+#   if($data =~ /^[-+]?\s*[\d.]+\s*[NS]?,\s*[-+]?\s*[\d.]+\s*[EW]/) {
+#     $format = 1;
+#   }
+#   # 40 deg 44' 55.02" N, 74 deg 0' 15.44" W
+#   if($data =~ /^[-+]?\s*[\d]+[ degrs]+\d+'\s*[\d.]+"\s*[NS]?[, ]*[-+]?\s*[\d]+[ degrs]+\d+'\s*[\d.]+"\s*[EW]/) {
+#     $format = 2;
+#   }
+#
+#   $gps->execute($image_id, $format, $data);
+  } # /location:0|gps:0/
+
+}
+
+$rc  = $dbh->disconnect;
+__END__

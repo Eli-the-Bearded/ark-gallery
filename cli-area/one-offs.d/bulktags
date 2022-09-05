@@ -1,0 +1,302 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use utf8;
+use DBI;
+
+use vars qw( $rc
+	     $dbh $find $insert
+	     $ark_tags_statement $ark_tag_find_statement
+	     @tags $tag $clean $id
+	     );
+
+$rc = do '/home/eli/photo-gallery/db-funcs.pm';
+if(!defined($rc)) { die "Failed to load db functions file\n"; }
+
+$dbh = dbconnect();
+
+$find   = $dbh->prepare( $ark_tag_find_statement );
+$insert = $dbh->prepare( $ark_tags_statement );
+
+binmode(STDOUT, ':utf8');
+binmode(DATA, ':utf8');
+
+next_tag:
+while($tag = <DATA>) {
+  chomp $tag;
+  $clean = clean_tag( $tag );
+
+  $find->execute( $clean );
+  my $result = $find->fetchall_arrayref();
+  @tags = map { $$_[0] } @$result;
+
+  for (@tags) {
+    if ($_ eq $tag) {
+      print STDERR "Aleady have tag $tag\n";
+      goto next_tag;
+    }
+  }
+
+  $insert->execute( $tag, $clean );
+
+  # "For some drivers the $catalog, $schema, $table, and $field parameter
+  # are required, for others they are ignored (e.g., mysql)"
+  $id = $dbh->last_insert_id( undef, undef, undef, undef );
+
+  print "$id\t$clean\t$tag\n"
+}
+$rc  = $dbh->disconnect;
+
+__END__
+_neighborhood_ 4th Street
+_neighborhood_ Adelphi
+_neighborhood_ Alamo Square
+_neighborhood_ Anza Vista
+_neighborhood_ Astoria South
+_neighborhood_ Austin
+_neighborhood_ Avalon
+_neighborhood_ Back of the Yards
+_neighborhood_ Battery Park City
+_neighborhood_ Bayview
+_neighborhood_ Bedford-Stuyvesant
+_neighborhood_ Blissville
+_neighborhood_ Brooklyn Heights
+_neighborhood_ Bucktown
+_neighborhood_ Cal-Gisler
+_neighborhood_ Camp Evers
+_neighborhood_ Canal Trustees
+_neighborhood_ Capital Hill
+_neighborhood_ Central Berkeley
+_neighborhood_ Chelsea
+_neighborhood_ Cityfront Place
+_neighborhood_ Civic Center
+_neighborhood_ Claremont
+_neighborhood_ Clawson
+_neighborhood_ Corona
+_neighborhood_ Corona Heights
+_neighborhood_ Crawford
+_neighborhood_ Crown Heights
+_neighborhood_ Depaul
+_neighborhood_ Diamond Heights
+_neighborhood_ Dolores Heights
+_neighborhood_ Douglaston
+_neighborhood_ Downtown Albuquerque
+_neighborhood_ Downtown Berkeley
+_neighborhood_ Downtown Manhattan
+_neighborhood_ Duboce Triangle
+_neighborhood_ Dutch Kills
+_neighborhood_ East Village
+_neighborhood_ Eureka Valley
+_neighborhood_ Eureka Valley Dolores Heights
+_neighborhood_ Financial District
+_neighborhood_ Financial District South
+_neighborhood_ Fisherman's Wharf
+_neighborhood_ Flushing
+_neighborhood_ Forest Hills
+_neighborhood_ Fort Winfield Scott
+_neighborhood_ Glen Park
+_neighborhood_ Glenridge
+_neighborhood_ Gold Coast
+_neighborhood_ Golden Gate
+_neighborhood_ Greater Callecita
+_neighborhood_ Greenpoint
+_neighborhood_ Hayes Valley
+_neighborhood_ Humboldt
+_neighborhood_ Hunters Point
+_neighborhood_ Inner Mission
+_neighborhood_ Inner Richmond
+_neighborhood_ Inset
+_neighborhood_ Jackson Heights
+_neighborhood_ Jackson Park Terrace
+_neighborhood_ Lake City
+_neighborhood_ LeClaire Courts
+_neighborhood_ Little Neck
+_neighborhood_ Little Poland
+_neighborhood_ Little Sicily
+_neighborhood_ Longfellow
+_neighborhood_ Loop
+_neighborhood_ Los Candelarias
+_neighborhood_ Lower Haight
+_neighborhood_ Lower Pacific Heights
+_neighborhood_ Mahou Riviera
+_neighborhood_ Malibu Beach
+_neighborhood_ Mandell
+_neighborhood_ Marcus Garvey Square
+_neighborhood_ Marina
+_neighborhood_ Marina Bay
+_neighborhood_ Marina District
+_neighborhood_ Martin Luther King Square
+_neighborhood_ Martinez Town
+_neighborhood_ Mcclymonds
+_neighborhood_ Meatpacking District
+_neighborhood_ Merced Manor
+_neighborhood_ Mission Bay
+_neighborhood_ Mission District
+_neighborhood_ Mission Dolores
+_neighborhood_ Montana
+_neighborhood_ Moreland
+_neighborhood_ Mosswood
+_neighborhood_ Near North Side
+_neighborhood_ New Eastside
+_neighborhood_ Noble Square
+_neighborhood_ Noe Valley
+_neighborhood_ North Panhandle
+_neighborhood_ North Side
+_neighborhood_ Northeast Santa Monica
+_neighborhood_ Northwest San Francisco
+_neighborhood_ Northwestern Brooklyn
+_neighborhood_ Olsen-Hansen Row Houses
+_neighborhood_ Outer Richmond
+_neighborhood_ Park Slope
+_neighborhood_ Peralta Villa
+_neighborhood_ Piedmont Avenue
+_neighborhood_ Playa Del Rey
+_neighborhood_ Prescott
+_neighborhood_ Presidio National Park
+_neighborhood_ Prospect Heights
+_neighborhood_ Ralph Bunche
+_neighborhood_ Ravenswood Place
+_neighborhood_ Red Hook
+_neighborhood_ Ridgeland
+_neighborhood_ River West
+_neighborhood_ Rockridge
+_neighborhood_ SOMISSPO
+_neighborhood_ San Jose
+_neighborhood_ Shafter
+_neighborhood_ Sierra Vista
+_neighborhood_ South
+_neighborhood_ South Beach
+_neighborhood_ South Berkeley
+_neighborhood_ South Brooklyn
+_neighborhood_ South Corona
+_neighborhood_ South Loop
+_neighborhood_ South Of Market
+_neighborhood_ South Prescott
+_neighborhood_ Southeast San Francisco
+_neighborhood_ Southside
+_neighborhood_ Squaw Ridge
+_neighborhood_ Streeterville
+_neighborhood_ Temescal
+_neighborhood_ Tenderloin
+_neighborhood_ The Castro
+_neighborhood_ Towertown
+_neighborhood_ Two Bridges
+_neighborhood_ Upper East Side
+_neighborhood_ Upper West Side
+_neighborhood_ Washington Park Court
+_neighborhood_ Water Tower
+_neighborhood_ West Berkeley
+_neighborhood_ West Lakeview
+_neighborhood_ West Oakland
+_neighborhood_ West Ravenwood
+_neighborhood_ West Town
+_neighborhood_ West and Near West Side
+_neighborhood_ Western Addition
+_neighborhood_ Westwood Highlands
+_neighborhood_ Williamsburg
+_neighborhood_ Woodlawn
+_neighborhood_ Woodside
+_neighborhood_ Zion District
+_locality_ Albany
+_locality_ Albuquerque
+_locality_ Albuquerque International Airport
+_locality_ Aptos
+_locality_ Berkeley
+_locality_ Buellton
+_locality_ Burlingame
+_locality_ Camden
+_locality_ Carmel-by-the-Sea
+_locality_ Cerrillos
+_locality_ Chicago
+_locality_ Cubero
+_locality_ Daly City
+_locality_ Dixon
+_locality_ El Granada
+_locality_ Emeryville
+_locality_ Felton
+_locality_ Golden
+_locality_ John F Kennedy International Airport
+_locality_ Laguna
+_locality_ Los Angeles
+_locality_ Madrid
+_locality_ Malibu
+_locality_ Mesita
+_locality_ Moss Beach
+_locality_ Muir Beach
+_locality_ New York
+_locality_ Oak Park
+_locality_ Oakland
+_locality_ Oxnard
+_locality_ Paso Robles
+_locality_ Pescadero
+_locality_ Point Reyes Station
+_locality_ Richmond
+_locality_ Rockland
+_locality_ Rockport
+_locality_ San Francisco
+_locality_ San Francisco International Airport
+_locality_ San Mateo
+_locality_ San Pedro
+_locality_ San Simeon
+_locality_ Santa Cruz
+_locality_ Santa Fe
+_locality_ Santa Monica
+_locality_ Sausalito
+_locality_ Scotts Valley
+_locality_ Seama
+_locality_ Solvang
+_locality_ Tijeras
+_locality_ Truckee
+_county_ Alameda
+_county_ Bernalillo
+_county_ Brooklyn
+_county_ Cibola
+_county_ Contra Costa
+_county_ Cook
+_county_ Knox
+_county_ Los Angeles
+_county_ Manhattan
+_county_ Marin
+_county_ Monterey
+_county_ Nevada
+_county_ Placer
+_county_ Queens
+_county_ San Francisco
+_county_ San Luis Obispo
+_county_ San Mateo
+_county_ Santa Barbara
+_county_ Santa Cruz
+_county_ Santa Fe
+_county_ Solano
+_county_ Valencia
+_county_ Ventura
+_state_ California
+_state_ Illinois
+_state_ Maine
+_state_ New Mexico
+_state_ New York
+_country_ United States
+_device_ CDM-8915VM
+_device_ Canon EOS 40D
+_device_ Canon PowerShot A100
+_device_ Canon PowerShot D20
+_device_ Canon PowerShot S410
+_device_ Canon PowerShot SD1200 IS
+_device_ Canon PowerShot SD1400 IS
+_device_ Canon PowerShot SD600
+_device_ Canon PowerShot SD700 IS
+_device_ Canon PowerShot SD870 IS
+_device_ Canon PowerShot SD940 IS
+_device_ DB 3MP
+_device_ E995
+_device_ FinePix A350
+_device_ FinePix F30
+_device_ KODAK EASYSHARE C713 ZOOM DIGITAL CAMERA
+_device_ Lomography Supersampler
+_device_ NIKON D40
+_device_ Perfection4490
+_device_ QSS
+_device_ QSS-32_33
+_device_ S60
+_device_ Ye Random Camera v17
+_device_ iPhone
