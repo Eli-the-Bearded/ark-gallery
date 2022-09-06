@@ -1,0 +1,46 @@
+Image Width		int
+Image Height		int
+Color Components	small int
+Bits Per Sample		small int
+
+Focal Length
+Y Cb Cr Sub Sampling
+Orientation
+Make
+Camera Model Name
+F Number
+Flash
+White Balance
+Shutter Speed
+ISO
+Exposure Compensation
+Scene Capture Type
+User Comment
+Exposure Program
+Light Source
+Digital Zoom Ratio
+GPS Img Direction
+Field Of View
+Lens ID
+Lens Type
+Shooting Mode
+Depth Of Field
+Drive Mode
+AF Point
+Focus Range
+Shot Number In Continuous Burst
+Auto Rotate
+Image Stabilization
+GPS Position
+Lens Facing
+Capture Mode
+GPS Date/Time
+GPS Altitude
+Lens Model
+Caption-Abstract
+Description
+Copyright
+Country-Primary Location Name
+State
+City
+IR Window Temperature
