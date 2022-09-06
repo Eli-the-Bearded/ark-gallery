@@ -1,0 +1,560 @@
+Ran on 52 exif samples
+
+Found     52 occurances of Palette
+  Sample 1: (Binary data 672 bytes, use -b option to extract)
+
+Found     52 occurances of Filter Model
+  Sample 1:  
+
+Found     52 occurances of PiP Y2
+  Sample 1: 479
+  Sample 2: 639
+  Sample 3: 319
+  Sample 4: 239
+
+Found     52 occurances of File Type Extension
+  Sample 1: jpg
+
+Found     52 occurances of Overflow Color
+  Sample 1: 67 216 98
+
+Found     52 occurances of Raw Thermal Image Type
+  Sample 1: PNG
+
+Found     52 occurances of Isotherm 2 Color
+  Sample 1: 100 110 240
+
+Found     52 occurances of Camera Temperature Range Max
+  Sample 1: 150.0 C
+  Sample 2: 120.0 C
+
+Found     52 occurances of Lens Part Number
+  Sample 1:  
+
+Found     52 occurances of Bits Per Sample
+  Sample 1: 8
+
+Found     52 occurances of File Name
+  Sample 1: flir_20190518T181013.jpg
+  Sample 2: flir_20190330T105308.jpg
+  Sample 3: flir_20190517T171223.jpg
+  Sample 4: flir_20190511T114744.jpg
+  Sample 5: flir_20190511T114911.jpg
+
+Found     52 occurances of Underflow Color
+  Sample 1: 41 110 240
+
+Found     52 occurances of Atmospheric Trans Beta 1
+  Sample 1: -0.002276
+
+Found     52 occurances of File Modification Date/Time
+  Sample 1: 2019:05:21 14:45:32-07:00
+  Sample 2: 2019:03:31 11:22:05-07:00
+  Sample 3: 2019:05:21 14:45:31-07:00
+  Sample 4: 2019:05:21 14:45:46-07:00
+  Sample 5: 2020:11:20 21:49:19-08:00
+
+Found     52 occurances of Y Cb Cr Positioning
+  Sample 1: Centered
+
+Found     52 occurances of File Type
+  Sample 1: JPEG
+
+Found     52 occurances of Components Configuration
+  Sample 1: -, Cr, Cb, Y
+
+Found     52 occurances of JFIF Version
+  Sample 1: 1.01
+
+Found     52 occurances of Embedded Image
+  Sample 1: (Binary data 271713 bytes, use -b option to extract)
+  Sample 2: (Binary data 148059 bytes, use -b option to extract)
+  Sample 3: (Binary data 250225 bytes, use -b option to extract)
+  Sample 4: (Binary data 159257 bytes, use -b option to extract)
+  Sample 5: (Binary data 157077 bytes, use -b option to extract)
+
+Found     52 occurances of Resolution Unit
+  Sample 1: inches
+
+Found     52 occurances of Thumbnail Image
+  Sample 1: (Binary data 3465 bytes, use -b option to extract)
+  Sample 2: (Binary data 2838 bytes, use -b option to extract)
+  Sample 3: (Binary data 3451 bytes, use -b option to extract)
+  Sample 4: (Binary data 2055 bytes, use -b option to extract)
+  Sample 5: (Binary data 2188 bytes, use -b option to extract)
+
+Found     52 occurances of Megapixels
+  Sample 1: 1.6
+  Sample 2: 0.307
+
+Found     52 occurances of File Permissions
+  Sample 1: rw-rw----
+
+Found     52 occurances of Y Cb Cr Sub Sampling
+  Sample 1: YCbCr4:2:0 (2 2)
+
+Found     52 occurances of Raw Value Range
+  Sample 1: 1872
+  Sample 2: 52800
+  Sample 3: 2368
+  Sample 4: 2224
+  Sample 5: 1792
+
+Found     52 occurances of X Resolution
+  Sample 1: 72
+
+Found     52 occurances of Lens Model
+  Sample 1:  
+  Sample 2: FOL2
+
+Found     52 occurances of Camera Temperature Range Min
+  Sample 1: -20.0 C
+  Sample 2: -40.0 C
+
+Found     52 occurances of Date/Time Original
+  Sample 1: 2019:05:19 01:10:03.000+00:00
+  Sample 2: 2019:03:30 17:52:59.000+00:00
+  Sample 3: 2019:05:18 00:12:15.000+00:00
+  Sample 4: 2019:05:11 18:47:34.000+00:00
+  Sample 5: 2019:05:11 18:48:42.000+00:00
+
+Found     52 occurances of Camera Temperature Min Clip
+  Sample 1: -60.0 C
+
+Found     52 occurances of Camera Model
+  Sample 1: CAT® S61
+  Sample 2: *
+
+Found     52 occurances of ExifTool Version Number
+  Sample 1: 11.88
+
+Found     52 occurances of Camera Temperature Max Clip
+  Sample 1: 150.0 C
+
+Found     52 occurances of Field Of View
+  Sample 1: 0.0 deg
+  Sample 2: 40.2 deg
+
+Found     52 occurances of Atmospheric Temperature
+  Sample 1: 20.0 C
+
+Found     52 occurances of Modify Date
+  Sample 1: 2019:05:18 18:10:03
+  Sample 2: 2019:03:30 10:52:59
+  Sample 3: 2019:05:17 17:12:15
+  Sample 4: 2019:05:11 11:47:34
+  Sample 5: 2019:05:11 11:48:42
+
+Found     52 occurances of Image Size
+  Sample 1: 1440x1080
+  Sample 2: 1080x1440
+  Sample 3: 480x640
+  Sample 4: 640x480
+
+Found     52 occurances of Filter Part Number
+  Sample 1:  
+
+Found     52 occurances of Color Components
+  Sample 1: 3
+
+Found     52 occurances of Make
+  Sample 1: FLIR Systems AB
+
+Found     52 occurances of Raw Thermal Image Width
+  Sample 1: 640
+  Sample 2: 480
+  Sample 3: 240
+  Sample 4: 320
+
+Found     52 occurances of Offset Y
+  Sample 1: -12
+  Sample 2: -19
+  Sample 3: -2
+  Sample 4: -8
+  Sample 5: +7
+
+Found     52 occurances of Image Width
+  Sample 1: 1440
+  Sample 2: 1080
+  Sample 3: 480
+  Sample 4: 640
+
+Found     52 occurances of Real 2 IR
+  Sample 1: 1.52327239513397
+  Sample 2: 1.48844182491302
+  Sample 3: 1.32300007343292
+
+Found     52 occurances of Digital Zoom Ratio
+  Sample 1: 1
+
+Found     52 occurances of Frame Rate
+  Sample 1: 0
+  Sample 2: 15
+
+Found     52 occurances of Exif Byte Order
+  Sample 1: Little-endian (Intel, II)
+
+Found     52 occurances of Camera Temperature Max Saturated
+  Sample 1: 150.0 C
+
+Found     52 occurances of Offset X
+  Sample 1: -19
+  Sample 2: +12
+  Sample 3: +8
+  Sample 4: -2
+  Sample 5: +15
+
+Found     52 occurances of Exif Image Height
+  Sample 1: 1080
+  Sample 2: 1440
+  Sample 3: 640
+  Sample 4: 480
+
+Found     52 occurances of IR Window Temperature
+  Sample 1: 22.0 C
+  Sample 2: 27.2 C
+  Sample 3: 26.9 C
+  Sample 4: 23.4 C
+  Sample 5: 26.8 C
+
+Found     52 occurances of Compression
+  Sample 1: JPEG (old-style)
+
+Found     52 occurances of Embedded Image Type
+  Sample 1: JPG
+
+Found     52 occurances of PiP X2
+  Sample 1: 639
+  Sample 2: 479
+  Sample 3: 239
+  Sample 4: 319
+
+Found     52 occurances of Atmospheric Trans Alpha 2
+  Sample 1: 0.012620
+
+Found     52 occurances of Camera Temperature Max Warn
+  Sample 1: 120.0 C
+
+Found     52 occurances of Atmospheric Trans X
+  Sample 1: 1.900000
+
+Found     52 occurances of Palette Method
+  Sample 1: 0
+
+Found     52 occurances of Camera Part Number
+  Sample 1:  
+  Sample 2: *
+
+Found     52 occurances of Subject Distance
+  Sample 1: 1 m
+
+Found     52 occurances of Above Color
+  Sample 1: 170 128 128
+
+Found     52 occurances of GPS Valid
+  Sample 1: No
+  Sample 2: Yes
+
+Found     52 occurances of File Inode Change Date/Time
+  Sample 1: 2021:02:05 18:38:29-08:00
+  Sample 2: 2021:02:05 18:38:30-08:00
+  Sample 3: 2021:02:05 18:54:00-08:00
+  Sample 4: 2021:02:05 18:54:01-08:00
+  Sample 5: 2021:02:05 18:54:02-08:00
+
+Found     52 occurances of Palette Stretch
+  Sample 1: 0
+
+Found     52 occurances of Atmospheric Trans Alpha 1
+  Sample 1: 0.006569
+
+Found     52 occurances of Y Resolution
+  Sample 1: 72
+
+Found     52 occurances of Palette Name
+  Sample 1: iron
+  Sample 2: Iron
+
+Found     52 occurances of File Access Date/Time
+  Sample 1: 2021:04:19 06:26:47-07:00
+  Sample 2: 2021:04:19 05:04:59-07:00
+  Sample 3: 2021:04:19 06:07:09-07:00
+  Sample 4: 2021:04:19 04:47:33-07:00
+  Sample 5: 2021:04:19 04:54:06-07:00
+
+Found     52 occurances of Exif Image Width
+  Sample 1: 1440
+  Sample 2: 1080
+  Sample 3: 480
+  Sample 4: 640
+
+Found     52 occurances of Raw Value Range Max
+  Sample 1: 65535
+  Sample 2: 50332
+
+Found     52 occurances of Software
+  Sample 1: Common_dll v1.0.0b1
+  Sample 2: Common_dll v1.0.0b0
+  Sample 3: *
+
+Found     52 occurances of Object Distance
+  Sample 1: 1.00 m
+
+Found     52 occurances of Planck F
+  Sample 1: 1
+
+Found     52 occurances of Isotherm 1 Color
+  Sample 1: 100 128 128
+
+Found     52 occurances of Raw Value Median
+  Sample 1: 13016
+  Sample 2: 39136
+  Sample 3: 13632
+  Sample 4: 13496
+  Sample 5: 13408
+
+Found     52 occurances of Camera Temperature Min Warn
+  Sample 1: -40.0 C
+
+Found     52 occurances of Raw Thermal Image Height
+  Sample 1: 480
+  Sample 2: 640
+  Sample 3: 320
+  Sample 4: 240
+
+Found     52 occurances of Camera Temperature Min Saturated
+  Sample 1: -60.0 C
+
+Found     52 occurances of MIME Type
+  Sample 1: image/jpeg
+
+Found     52 occurances of Creator Software
+  Sample 1:  
+
+Found     52 occurances of Planck O
+  Sample 1: -1713
+  Sample 2: -3175
+
+Found     52 occurances of PiP X1
+  Sample 1: 0
+
+Found     52 occurances of Orientation
+  Sample 1: Horizontal (normal)
+
+Found     52 occurances of Palette Colors
+  Sample 1: 224
+
+Found     52 occurances of Filter Serial Number
+  Sample 1:  
+
+Found     52 occurances of Camera Model Name
+  Sample 1: CAT® S61
+  Sample 2: *
+
+Found     52 occurances of File Size
+  Sample 1: 2.2 MB
+  Sample 2: 1849 kB
+  Sample 3: 2.1 MB
+  Sample 4: 1765 kB
+  Sample 5: 1795 kB
+
+Found     52 occurances of Create Date
+  Sample 1: 2019:05:18 18:10:03
+  Sample 2: 2019:03:30 10:52:59
+  Sample 3: 2019:05:17 17:12:15
+  Sample 4: 2019:05:11 11:47:34
+  Sample 5: 2019:05:11 11:48:42
+
+Found     52 occurances of Planck R1
+  Sample 1: 18029.801
+  Sample 2: 16919.15
+
+Found     52 occurances of Peak Spectral Sensitivity
+  Sample 1: 10.0 um
+
+Found     52 occurances of Image Height
+  Sample 1: 1080
+  Sample 2: 1440
+  Sample 3: 640
+  Sample 4: 480
+
+Found     52 occurances of Thumbnail Offset
+  Sample 1: 1852
+  Sample 2: 2016
+  Sample 3: 2040
+
+Found     52 occurances of Emissivity
+  Sample 1: 0.90
+  Sample 2: 1.00
+
+Found     52 occurances of Atmospheric Trans Beta 2
+  Sample 1: -0.006677
+  Sample 2: -0.006670
+
+Found     52 occurances of Planck B
+  Sample 1: 1435
+
+Found     52 occurances of Raw Thermal Image
+  Sample 1: (Binary data 97676 bytes, use -b option to extract)
+  Sample 2: (Binary data 215301 bytes, use -b option to extract)
+  Sample 3: (Binary data 95147 bytes, use -b option to extract)
+  Sample 4: (Binary data 103333 bytes, use -b option to extract)
+  Sample 5: (Binary data 93255 bytes, use -b option to extract)
+
+Found     52 occurances of IR Window Transmission
+  Sample 1: 0.82
+  Sample 2: 0.85
+  Sample 3: 0.83
+
+Found     52 occurances of Color Space
+  Sample 1: sRGB
+
+Found     52 occurances of Relative Humidity
+  Sample 1: 50.0 %
+
+Found     52 occurances of Below Color
+  Sample 1: 50 128 128
+
+Found     52 occurances of PiP Y1
+  Sample 1: 0
+
+Found     52 occurances of Focus Step Count
+  Sample 1: 0
+
+Found     52 occurances of Camera Software
+  Sample 1:  
+  Sample 2: 1.0.0
+
+Found     52 occurances of Focus Distance
+  Sample 1: 2.0 m
+
+Found     52 occurances of Lens Serial Number
+  Sample 1: No Lens
+  Sample 2:  
+
+Found     52 occurances of Embedded Image Height
+  Sample 1: 1080
+  Sample 2: 1440
+  Sample 3: 640
+  Sample 4: 480
+
+Found     52 occurances of Embedded Image Width
+  Sample 1: 1440
+  Sample 2: 1080
+  Sample 3: 480
+  Sample 4: 640
+
+Found     52 occurances of Flashpix Version
+  Sample 1: 0100
+
+Found     52 occurances of Image Temperature Min
+  Sample 1: 213
+
+Found     52 occurances of Planck R2
+  Sample 1: 0.0125
+
+Found     52 occurances of Exif Version
+  Sample 1: 0220
+
+Found     52 occurances of Directory
+  Sample 1: /d95c/98a5523e-backup/cat/cat61/2019-09-14/storage/shared/FLIR
+  Sample 2: /d95c/98a5523e-backup/cat/cat61/2021-01-17/storage/shared/FLIR
+  Sample 3: /d95c/98a5523e-backup/cat/cat61/2019-03/storage/shared/FLIR
+  Sample 4: /d95c/98a5523e-backup/cat/cat61/2020-07-04/storage/shared/FLIR
+  Sample 5: /d95c/98a5523e-backup/cat/cat60/2018-01/storage/shared/FLIR
+
+Found     52 occurances of Thumbnail Length
+  Sample 1: 3465
+  Sample 2: 2838
+  Sample 3: 3451
+  Sample 4: 2055
+  Sample 5: 2188
+
+Found     52 occurances of Encoding Process
+  Sample 1: Baseline DCT, Huffman coding
+
+Found     52 occurances of Reflected Apparent Temperature
+  Sample 1: 25.0 C
+  Sample 2: 298.1 C
+
+Found     52 occurances of Image Temperature Max
+  Sample 1: 213
+
+Found     52 occurances of Camera Serial Number
+  Sample 1:  
+  Sample 2: *
+
+Found     52 occurances of Image Unique ID
+  Sample 1: 00000000000000000000000000000000
+  Sample 2: DA7AFACBCE2025C154F711DE89D9299E
+  Sample 3: 2B715B2346466F73E98DFD3B2B9F4EFF
+  Sample 4: 3FE6ABEAAD85EF1A307F4926FB3B3D35
+  Sample 5: B27063FCFA140E8E97601030330CABBE
+
+Found     52 occurances of Raw Value Range Min
+  Sample 1: 4
+  Sample 2: 4790
+
+Found     29 occurances of Subject
+  Sample 1: Maker Faire, thermal
+  Sample 2: cooking, thermal
+  Sample 3: thermal
+  Sample 4: thermal, yard
+  Sample 5: street details, thermal
+
+Found     27 occurances of GPS Longitude
+  Sample 1: 0 deg 0' 0.00" E
+  Sample 2: 110 deg 44' 18.00" W
+  Sample 3: 109 deg 37' 32.16" W
+  Sample 4: 109 deg 37' 32.34" W
+  Sample 5: 110 deg 44' 17.40" W
+
+Found     27 occurances of GPS Latitude Ref
+  Sample 1: North
+  Sample 2: Unknown (No)
+
+Found     27 occurances of GPS Position
+  Sample 1: 0 deg 0' 0.00" N, 0 deg 0' 0.00" E
+  Sample 2: 44 deg 41' 29.46" N, 110 deg 44' 18.00" W
+  Sample 3: 44 deg 27' 55.98" N, 109 deg 37' 32.16" W
+  Sample 4: 44 deg 27' 58.80" N, 109 deg 37' 32.34" W
+  Sample 5: 44 deg 41' 29.64" N, 110 deg 44' 17.40" W
+
+Found     27 occurances of GPS Longitude Ref
+  Sample 1: East
+  Sample 2: Unknown (We)
+
+Found     27 occurances of GPS Latitude
+  Sample 1: 0 deg 0' 0.00" N
+  Sample 2: 44 deg 41' 29.46" N
+  Sample 3: 44 deg 27' 55.98" N
+  Sample 4: 44 deg 27' 58.80" N
+  Sample 5: 44 deg 41' 29.64" N
+
+Found     27 occurances of GPS Map Datum
+  Sample 1: WGS84
+
+Found     27 occurances of GPS Version ID
+  Sample 1: 2.2.0.0
+
+Found     27 occurances of GPS Altitude Ref
+  Sample 1: Above Sea Level
+
+Found     24 occurances of Favorite
+  Sample 1: 0
+
+Found     24 occurances of XMP Toolkit
+  Sample 1: XMP Core 4.4.0-Exiv2
+
+Found     20 occurances of Focal Length
+  Sample 1: 2.7 mm
+
+Found     17 occurances of GPS Img Direction Ref
+  Sample 1: Magnetic North
+
+Found     17 occurances of GPS Img Direction
+  Sample 1: 0
+
+Found     10 occurances of Palette File Name
+  Sample 1: iron.pal
+
