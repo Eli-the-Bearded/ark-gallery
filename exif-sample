@@ -1,0 +1,52 @@
+#!/usr/bin/perl
+# for jpeg in $( find /.../ -type f -name \*jpg ) ; do exiftool "$jpeg" > "$jpeg.exif" ; done
+# find /.../ -type f -name \*exif | perl exif-sample > sample-exif.out
+
+use strict;
+use warnings;
+use vars qw ( $file $line $files $field $value %fields %samples $ref );
+
+while($file = <>) {
+  chomp $file;
+  if (open(EXIF, '<', $file)) {
+    $files ++;
+    while(defined($line = <EXIF>)) {
+      next unless $line =~ /:/;
+      chomp $line;
+      if ($line =~ /^([^:]*\S)\s*:\s*(.+)/) {
+        $field = $1;
+	$value = $2;
+      } else {
+        next;
+      }
+      $fields{$field} ++;
+      
+      if(!exists($samples{$field})) {
+        $samples{$field} = [ $value ];
+      } else {
+        $ref = $samples{$field};
+	if (5 == scalar @$ref) { 
+	  # enough samples
+	  next
+	}
+	# is this sample new?
+	my $use = 1;
+	map { $use = ($value eq $_) ? 0 : $use } (@$ref);
+	if($use) { push(@$ref, $value); }
+      } # not the first sample
+    } # for line in EXIF file
+    close EXIF;
+  } else {
+    print STDERR "Skipping $file, can't open\n";
+  }
+} # for all files
+
+print "Ran on $files exif samples\n\n";
+for $field (sort { $fields{$b} <=> $fields{$a} } (keys %fields) ) {
+  printf "Found %6d occurances of %s\n", $fields{$field}, $field;
+
+  $ref = $samples{$field};
+  my $l = 1;
+  for (@$ref) { print "  Sample $l: $_\n"; $l ++; }
+  print "\n";
+}
