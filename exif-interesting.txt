@@ -2,6 +2,7 @@ Image Width		int
 Image Height		int
 Color Components	small int
 Bits Per Sample		small int
+Create Date
 
 Focal Length
 Y Cb Cr Sub Sampling

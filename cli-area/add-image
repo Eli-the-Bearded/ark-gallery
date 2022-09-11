@@ -1,0 +1,284 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use utf8;
+use DBI;
+use vars qw( $exiftool %exif_data %image_data @tags
+	     @extra $prefix $usedate $image_path
+	     $verbose $dryrun
+	   );
+
+sub usage {
+  print "Usage:\n";
+  print "   add-image [ options ] image [ image ... ]\n";
+  print "\n";
+  print "Options\n";
+  print "  --dryrun                          : don't actually add to db\n";
+  print "\n";
+  print "  --exiftool  /path/to/exiftool     : specify tool location\n";
+  print "If your exiftool is not in /usr/bin/\n";
+  print "\n";
+  print "  --prefix    /foo/bar              : path prefix to remove\n";
+  print "A full cannonical path is saved in database, this strips off\n";
+  print "part, useful for working with images in staging areas.\n";
+  print "\n";
+  print "  --tag       'tag value'           : add additional tag\n";
+  print "Can be used multiple times.\n";
+  print "\n";
+  print "  --usedate  'YYYY:MM:DD[ HH:MM:SS]' : supply override date\n";
+  print "If you know the exif date is wrong or missing but know the\n";
+  print "correct value. Time stamp part optional.\n";
+  print "\n";
+  print "  --verbose                          : use twice for more\n";
+  print "\n";
+  exit;
+}
+
+$exiftool = '/usr/bin/exiftool';
+
+# exact names from exiftool output that will be used by this tool
+%image_data = (
+	'Image Width'                 => '',
+	'Image Height'                => '',
+	'Color Components'            => '',
+	'Bits Per Sample'             => '',
+	'Create Date'                 => '',
+	'File Modification Date/Time' => '',
+	'GPS Position'                => '',
+);
+
+# for exif table, not actually used here
+%exif_data = (
+	'Focal Length'                    => '',
+	'Y Cb Cr Sub Sampling'            => '',
+	'Orientation'                     => '',
+	'Make'                            => '',
+	'Camera Model Name'               => '',
+	'F Number'                        => '',
+	'Flash'                           => '',
+	'White Balance'                   => '',
+	'Shutter Speed'                   => '',
+	'ISO'                             => '',
+	'Exposure Compensation'           => '',
+	'Scene Capture Type'              => '',
+	'User Comment'                    => '',
+	'Exposure Program'                => '',
+	'Light Source'                    => '',
+	'Digital Zoom Ratio'              => '',
+	'GPS Img Direction'               => '',
+	'Field Of View'                   => '',
+	'Lens ID'                         => '',
+	'Lens Type'                       => '',
+	'Shooting Mode'                   => '',
+	'Depth Of Field'                  => '',
+	'Drive Mode'                      => '',
+	'AF Point'                        => '',
+	'Focus Range'                     => '',
+	'Shot Number In Continuous Burst' => '',
+	'Auto Rotate'                     => '',
+	'Image Stabilization'             => '',
+	'Lens Facing'                     => '',
+	'Capture Mode'                    => '',
+	'GPS Date/Time'                   => '',
+	'GPS Altitude'                    => '',
+	'Lens Model'                      => '',
+	'Caption-Abstract'                => '',
+	'Description'                     => '',
+	'Copyright'                       => '',
+	'Country-Primary Location Name'   => '',
+	'State'                           => '',
+	'City'                            => '',
+	'IR Window Temperature'           => '',
+);
+
+sub parseargs {
+  while(defined($ARGV[0])) {
+    if($ARGV[0] =~ /^-(.*)/ ) {
+      my $arg = $1;
+      shift @ARGV;;
+
+      if( $arg eq '-') { # --
+        return;
+      }
+
+      if( $arg eq '-dryrun' ) {
+        $dryrun = 1;
+      }
+
+      if( $arg eq '-exiftool' ) {
+        $exiftool = shift @ARGV;
+	if (! -x $exiftool) {
+          die "$0: not a useful exiftool: $!\n";
+	}
+	next;
+      }
+
+      if( $arg eq '-prefix' ) {
+        $prefix = shift @ARGV;
+	if (!defined($prefix)) {
+          die "$0: unexpected end of parameters, wanted a prefix\n";
+	}
+	next;
+      }
+
+      if( $arg eq '-usedate' ) {
+        $usedate = shift @ARGV;
+	if (!defined($usedate)) {
+          die "$0: unexpected end of parameters, wanted a date\n";
+	}
+	if ($usedate !~ m,^\d\d\d\d[:/]\d\d[:/]\d\d( \d\d:\d\d:\d\d)?$,) {
+          die "$0: unexpected date format: $usedate\n";
+	}
+	$usedate =~ tr#/#:#;
+	next;
+      }
+
+      if( $arg eq '-tag' ) {
+        $arg = shift @ARGV;
+	if (!defined($arg)) {
+          die "$0: unexpected end of parameters, wanted a tag\n";
+	}
+	push(@extra, $arg);
+	next;
+      }
+
+      if( $arg eq '-verbose' ) {
+        $verbose += 1;
+      }
+
+      if( $arg eq '-vv' ) {
+        $verbose += 2;
+      }
+
+      if( $arg eq 'h' or $arg eq '-help' ) {
+        usage(); # never returns
+      }
+
+      # end of expected options, but there was something with -
+      die "$0: unknown option -$arg\n";
+
+    } else {
+      # does not start with -, should be a file
+      return;
+    }
+  }
+}
+
+sub varreset {
+  map { $exif_data{$_}  = undef; } (keys %exif_data);
+  map { $image_data{$_} = '';    } (keys %image_data);
+  undef(@tags);
+}
+
+sub read_exif {
+  my $fh;
+  my $name;
+  my $value;
+
+  open($fh, '-|', $exiftool, $image_path)
+  	or die "$0: $exiftool $image_path: $!\n";
+  binmode($fh, ':utf8');
+
+  while(<$fh>) {
+    if ( ($name, $value) = /^([^:]*\S)\s*:\s*(\S.*)/ ) {
+      if ($name eq 'Subject') {
+        @tags = split(/,\s*/, $value);
+        next;
+      }
+
+      if ( exists($image_data{$name})) {
+        $image_data{$name} = $value;
+        next;
+      }
+
+      if ( exists($exif_data{$name})) {
+        $exif_data{$name} = $value;
+      }
+
+    }
+  }
+  close $fh;
+}
+
+sub store {
+  my $dbh = shift;
+  my $name = $image_path;
+  $name =~ s,^.*/,,;
+  $name =~ s,[.][^.]*$,,;
+
+  push(@tags, @extra);
+
+  if ($verbose or $dryrun) {
+    print "Adding $name with path $image_path\n";
+  }
+
+  if($usedate) {
+    $image_data{'Create Date'} = $usedate;
+  } elsif(!$image_data{'Create Date'}) {
+    $image_data{'Create Date'} = $image_data{'File Modification Date/Time'};
+  }
+
+  # Trying insert for PANO_20220716_153704
+  # ... Incorrect datetime value: '2022:08:22 22:42:21-04:00' for column 'image_date'
+  # File Modification Date/Time is including a time zone...
+
+  $image_data{'Create Date'} =~ 
+                        s/^(\d\d\d\d:\d\d:\d\d \d\d:\d\d:\d\d[.\d]*).+/$1/ ;
+
+  if ($dryrun or $verbose > 1) {
+    local $, = "\n    : ";
+    print "Tags: "; print @tags; print "\n";
+    print "Width: $image_data{'Image Width'}\n";
+    print "Height: $image_data{'Image Height'}\n";
+    print "Components: $image_data{'Color Components'}\n";
+    print "Bits: $image_data{'Bits Per Sample'}\n";
+    print "Date: $image_data{'Create Date'}\n";
+    print "Location: $image_data{'GPS Position'}\n";
+    print "Extra exif\n";
+    while( ($a, $b) = each %exif_data ) {
+      print "  $a -> ($b)\n" if defined($b);
+    }
+    print "\n";
+  }
+  
+  if ($dryrun) {
+    return 0;
+  }
+  print "Calling add_image\n";
+  my $image_id = add_image($dbh, 
+    		  { image_path => $image_path,
+                    image_name => $name,
+                    image_date => $image_data{'Create Date'},
+                    width => $image_data{'Image Width'},
+		    height => $image_data{'Image Height'},
+                    bits => $image_data{'Bits Per Sample'},
+		    components => $image_data{'Color Components'},
+                    location => $image_data{'GPS Position'},
+                    tags => \@tags,
+                    exif => \%exif_data,
+                  });
+
+  return $image_id;
+}
+
+sub main {
+  $verbose = 1;
+  $dryrun = 0;
+  parseargs();
+  my $dbh = dbconnect();
+  for $image_path (@ARGV) {
+    varreset();
+    read_exif();
+    if(defined($usedate)) {
+      $image_data{'Create Date'} = $usedate;
+    }
+    if(defined($prefix)) {
+      $image_path =~ s,\Q$prefix,,;
+    }
+    store($dbh);
+  }
+}
+
+my $rc = do './db-funcs.pm';
+if(!defined($rc)) { die "Failed to load db functions file $@\n"; }
+main();

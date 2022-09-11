@@ -1,16 +1,20 @@
-# created, database ark on begriffin.com
 
 -- image basics: id, path, base name, date
 CREATE TABLE `ark_images` (
-  `image_id` int(11) NOT NULL auto_increment,
-  `image_path` varchar(255) NOT NULL UNIQUE,	-- a path name with directories and suffix
-  `image_name` varchar(47) NOT NULL,            -- just a base name like "flir_20220718T220825"
-  `image_date` DATETIME,
+  `image_id` int(11) NOT NULL AUTO_INCREMENT,
+  `width` int(11) DEFAULT '0',
+  `height` int(11) DEFAULT '0',
+  `image_path` varchar(255) NOT NULL,
+  `image_name` varchar(47) NOT NULL,
+  `image_date` datetime DEFAULT NULL,
+  `components` tinyint(4) DEFAULT '3',
+  `bits` tinyint(4) DEFAULT '8',
   PRIMARY KEY (`image_id`),
-  INDEX (`image_path`),
-  INDEX (`image_name`),
-  INDEX (`image_date`)
-);
+  UNIQUE KEY `image_path` (`image_path`),
+  KEY `image_path_2` (`image_path`),
+  KEY `image_name` (`image_name`),
+  KEY `image_date` (`image_date`)
+)
 
 -- find image ids associated with tag ids (tag search mode)
 -- find tag ids associated with image ids (image display)
@@ -24,15 +28,14 @@ CREATE TABLE `ark_images_tags` (
 -- for any tag, there's a tag id
 -- tag is for display, tag_clean is for match
 CREATE TABLE `ark_tags` (
-  `tag_id` int(11) NOT NULL auto_increment,
-  `tag` varchar(127) character set utf8mb4 COLLATE utf8mb4_unicode_ci,
-  `tag_clean` varchar(127) character set utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `tag_id` int(11) NOT NULL AUTO_INCREMENT,
+  `uses` int(11) DEFAULT '0',
+  `last` datetime DEFAULT NULL,
+  `tag` varchar(127) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `tag_clean` varchar(127) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   PRIMARY KEY (`tag_id`),
-  INDEX (`tag_clean`)
-);
-ALTER TABLE `ark_tags` 
-  ADD `uses` int(11) default 1 AFTER `tag_id`,
-  ADD `last` DATETIME default NULL AFTER `uses`;
+  KEY `tag_clean` (`tag_clean`)
+)
 
 -- Some images have titles
 CREATE TABLE `ark_title` (
@@ -67,10 +70,24 @@ CREATE TABLE `ark_location` (
 -- camera, depth of field, capture mode, or other data to save
 CREATE TABLE `ark_exif_other` (
   `image_id` int(11) NOT NULL default 0,
-  `exif_name` varchar(63) character set utf8mb4 COLLATE utf8mb4_unicode_ci default NULL,
-  `exif_value` varchar(63) character set utf8mb4 COLLATE utf8mb4_unicode_ci default NULL,
+  `exif_name_id` int(11),
+  `exif_value_id` int(11),
   INDEX (`image_id`),
-  INDEX (`exif_name`),
-  INDEX (`exif_value`)
+  INDEX (`exif_name_id`),
+  INDEX (`exif_value_id`)
+);
+
+CREATE TABLE `ark_exif_names` (
+  `exif_name_id` int(11) NOT NULL auto_increment,
+  `exif_name` varchar(63) character set utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL UNIQUE,
+  PRIMARY KEY (`exif_name_id`),
+  INDEX (`exif_name`)
+);
+
+CREATE TABLE `ark_exif_values` (
+  `exif_value_id` int(11) NOT NULL auto_increment,
+  `exif_value` varchar(63) character set utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  PRIMARY KEY (`exif_value_id`),
+  FULLTEXT exiftext (`exif_value`)
 );
 
