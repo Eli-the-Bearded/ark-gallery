@@ -396,4 +396,14 @@ print STDERR "Worked for $name have $image_id\n";
   $image_id;
 }
 
+sub get_tags_for_image {
+  my $dbh      = shift;
+  my $image_id = shift;
+  my $tags_sth = $dbh->prepare( $ark_image_tag_find_statement );
+
+  $tags_sth->execute($image_id);
+  my $result = $tags_sth->fetchall_arrayref();
+
+  return (map { $$_[0] } @$result);
+}
 1;

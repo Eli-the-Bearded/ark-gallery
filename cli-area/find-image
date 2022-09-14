@@ -1,0 +1,230 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use utf8;
+use DBI;
+
+use vars qw( $rc
+	     $dbh 
+	     %parts
+	     $parts @params
+	     $query $query_order $query_limit
+	     $sth $answer @columns
+	     );
+
+$rc = do '/home/eli/photo-gallery/db-funcs.pm';
+if(!defined($rc)) { die "Failed to load db functions file\n"; }
+
+@columns = qw| image_id width height image_path
+               image_name image_date components bits |;
+
+%parts = (
+   start => q#
+     SELECT a.* FROM `ark_images` a
+   #,
+
+   tags_join => q#
+           INNER JOIN `ark_images_tags` i ON i.`image_id` = a.`image_id` 
+	   INNER JOIN `ark_tags` t        ON t.`tag_id`   = i.`tag_id`
+   #,
+
+   tags_where => q#
+	 WHERE t.`tag_clean` = ?
+   #,
+
+   where_not_in => q#
+	 WHERE a.`image_id` NOT IN (
+   #,
+
+   tags_where_like => q#
+	 WHERE t.`tag_clean` LIKE ?
+   #,
+
+   sub_start => q#
+   	   SELECT DISTINCT a.`image_id` FROM `ark_images` a
+   #,
+
+   and_in => q#
+	 AND i.`image_id` IN (
+   #,
+
+   or_in => q#
+	 OR i.`image_id` IN (
+   #,
+
+   and_not_in => q#
+	 AND i.`image_id` NOT IN (
+   #,
+
+   end_in => q#
+	 )
+   #,
+
+   sort_recent => q#
+       ORDER BY a.image_date DESC
+   #,
+   
+   sort_older => q#
+       ORDER BY a.image_date
+   #,
+
+   random => q#
+       ORDER BY RAND()
+   #,
+
+   limit => q#
+       LIMIT 10
+   #,
+);
+
+$query = $parts{start};
+$query_order = '';
+$query_limit = 'LIMIT 50';
+$parts = 0;
+
+while( defined(my $frag = shift @ARGV) ) {
+   if($frag eq '--tag' or $frag eq '-t') {
+      if($parts) {
+        $query .= $parts{and_in} .
+		    $parts{sub_start} .
+		    $parts{tags_join} .
+		    $parts{tags_where} .
+		  $parts{end_in} ;
+      } else {
+        $query .= $parts{tags_join} .
+		  $parts{tags_where};
+
+      }
+
+      $parts ++;
+      push(@params, shift @ARGV);
+      next;
+   }
+
+   if($frag eq '--ortag' or $frag eq '-o') {
+      if($parts) {
+        $query .= $parts{or_in} .
+		    $parts{sub_start} .
+		    $parts{tags_join} .
+		    $parts{tags_where} .
+		  $parts{end_in} ;
+      } else {
+        # or doesn't make sense as first, treat as --tag
+        $query .= $parts{tags_join} .
+		  $parts{tags_where};
+      }
+
+      $parts ++;
+      push(@params, shift @ARGV);
+      next;
+   }
+
+   if($frag eq '--nottag' or $frag eq '-n') {
+      if($parts) {
+        $query .= $parts{and_not_in} .
+		    $parts{sub_start} .
+		    $parts{tags_join} .
+		    $parts{tags_where} .
+		  $parts{end_in} ;
+      } else {
+        $query .= $parts{where_not_in} .
+		    $parts{sub_start} .
+		    $parts{tags_join} .
+		    $parts{tags_where} .
+		  $parts{end_in} ;
+      }
+
+      $parts ++;
+      push(@params, shift @ARGV);
+      next;
+   }
+
+   if($frag eq '--taglike' or $frag eq '-l') {
+      if($parts) {
+        $query .= $parts{and_in} .
+		    $parts{sub_start} .
+		    $parts{tags_join} .
+		    $parts{tags_where_like} .
+		  $parts{end_in} ;
+      } else {
+        $query .= $parts{tags_join} .
+		  $parts{tags_where_like};
+
+      }
+
+      $parts ++;
+      $frag = shift @ARGV;
+      push(@params, "%$frag%");
+      next;
+   }
+
+   if($frag eq '--newer' or $frag eq '-N') {
+      $query_order = $parts{sort_recent};
+      next;
+   }
+
+   if($frag eq '--older' or $frag eq '-O') {
+      $query_order = $parts{sort_older};
+      next;
+   }
+
+   if($frag eq '--random' or $frag eq '-R') {
+      $query_order = $parts{random};
+      next;
+   }
+
+   if($frag eq '--limit' or $frag eq '-L') {
+      $query_limit = $parts{limit};
+      next;
+   }
+
+   print "$0: unknown option $frag\n";
+   usage();
+}
+
+sub usage {
+  print "find-image options:\n";
+  print "  --newer  / -N 	sort newer first\n";
+  print "  --older  / -O 	sort older first\n";
+  print "  --random / -R 	random order results\n";
+  print "  --limit  / -L 	smaller sample size\n";
+  print "\n";
+  print "Searching optins:\n";
+  print "  --tag     TEXT / -t TEXT     and clean tag TEXT\n";
+  print "  --ortag   TEXT / -o TEXT     or clean tag TEXT\n";
+  print "  --taglike TEXT / -l TEXT     and clean tag like %TEXT%\n";
+  print "  --nottag  TEXT / -n TEXT     does not have tag TEXT\n";
+  exit;
+}
+
+$query .= "$query_order$query_limit;\n";
+$query =~ s,\n\s*\n+,\n,gm;
+
+print $query;
+$" = ', ';
+print "Binding params: @params\n";
+
+$dbh = dbconnect();
+$sth = $dbh->prepare($query);
+
+$sth->execute(@params);
+
+$answer = $sth->fetchall_arrayref;
+
+$parts = 0;
+while ( my $row_ref = shift(@$answer) ) {
+  print "Part $parts\n"; $parts ++;
+  die if ($parts > 50);
+
+  $_ = 0;
+  for my $k (@columns) {
+    print "$k: $$row_ref[$_]   ";
+    $_ ++;
+  }
+  print "Tags: " . join("; ", get_tags_for_image($dbh, $$row_ref[0]));
+  print "\n\n";
+}
+
+if ($parts == 0) {
+  print "No results\n";
+}
