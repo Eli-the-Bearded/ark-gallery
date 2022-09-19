@@ -5,6 +5,8 @@ use vars qw(
 	$ark_tag_search_statement
 	$ark_tag_recent_statement
 	$ark_tag_find_statement
+	$ark_title_find_statement
+	$ark_description_find_statement
 	$ark_add_images_tags
 	$ark_tag_update_usage
 	$ark_image_tag_find_statement
@@ -51,6 +53,14 @@ $ark_tag_most_statement = qq!
 # find display version of tags exactly matching tag_clean
 $ark_tag_find_statement = 
        'SELECT `tag_id`, `tag` FROM `ark_tags` WHERE `tag_clean` = ?; ';
+
+# Get a title
+$ark_title_find_statement = 
+       'SELECT `title` FROM `ark_title` WHERE `image_id` = ?; ';
+
+# Get a description
+$ark_description_find_statement = 
+       'SELECT `description` FROM `ark_description` WHERE `image_id` = ?; ';
 
 # find display versions of tags for a particular image_id
 #$ark_image_tag_find_statement = '
@@ -406,4 +416,27 @@ sub get_tags_for_image {
 
   return (map { $$_[0] } @$result);
 }
+
+sub get_title_for_image {
+  my $dbh      = shift;
+  my $image_id = shift;
+  my $title_sth = $dbh->prepare( $ark_title_find_statement );
+
+  $title_sth->execute($image_id);
+  my $result = $title_sth->fetchrow_array();
+
+  return $result;
+}
+
+sub get_description_for_image {
+  my $dbh      = shift;
+  my $image_id = shift;
+  my $desc_sth = $dbh->prepare( $ark_description_find_statement );
+
+  $desc_sth->execute($image_id);
+  my $result = $desc_sth->fetchrow_array();
+
+  return $result;
+}
+
 1;

@@ -4,7 +4,7 @@ use warnings;
 use utf8;
 use DBI;
 
-use vars qw( $rc
+use vars qw( $rc $count $col $id
 	     $dbh 
 	     %parts
 	     $parts @params
@@ -28,8 +28,33 @@ if(!defined($rc)) { die "Failed to load db functions file\n"; }
 	   INNER JOIN `ark_tags` t        ON t.`tag_id`   = i.`tag_id`
    #,
 
+   # takes three params: %TERM% TERM %TERM%
+   anywhere_block => q#
+	   SELECT l.`image_id` FROM `ark_title` l WHERE l.`title` LIKE ?
+           UNION
+	   SELECT d.`image_id` FROM `ark_description` d
+               WHERE MATCH (d.`description`) AGAINST (?)
+           UNION
+	   SELECT DISTINCT a.`image_id` FROM `ark_images` a
+                 INNER JOIN `ark_images_tags` i ON i.`image_id` = a.`image_id`
+                 INNER JOIN `ark_tags` t        ON t.`tag_id`   = i.`tag_id`
+               WHERE t.`tag_clean` LIKE ?
+   #,
+
+   title_join => q#
+           INNER JOIN `ark_title` l ON l.`image_id` = a.`image_id`
+   #,
+
+   description_join => q#
+           INNER JOIN `ark_description` d ON d.`image_id` = a.`image_id`
+   #,
+
    tags_where => q#
 	 WHERE t.`tag_clean` = ?
+   #,
+
+   where_in => q#
+	 WHERE a.`image_id` IN (
    #,
 
    where_not_in => q#
@@ -40,20 +65,44 @@ if(!defined($rc)) { die "Failed to load db functions file\n"; }
 	 WHERE t.`tag_clean` LIKE ?
    #,
 
+   title_where_like => q#
+	 WHERE l.`title` LIKE ?
+   #,
+
+   description_match => q#
+	 WHERE MATCH (d.`description`) AGAINST (?)
+   #,
+
+   where_before => q#
+	 WHERE a.`image_date` < ?
+   #,
+
+   where_after => q#
+	 WHERE a.`image_date` > ?
+   #,
+
+   and_before => q#
+	 AND a.`image_date` < ?
+   #,
+
+   and_after => q#
+	 AND a.`image_date` > ?
+   #,
+
    sub_start => q#
    	   SELECT DISTINCT a.`image_id` FROM `ark_images` a
    #,
 
    and_in => q#
-	 AND i.`image_id` IN (
+	 AND a.`image_id` IN (
    #,
 
    or_in => q#
-	 OR i.`image_id` IN (
+	 OR a.`image_id` IN (
    #,
 
    and_not_in => q#
-	 AND i.`image_id` NOT IN (
+	 AND a.`image_id` NOT IN (
    #,
 
    end_in => q#
@@ -158,6 +207,86 @@ while( defined(my $frag = shift @ARGV) ) {
       next;
    }
 
+   if($frag eq '--title' or $frag eq '-T') {
+      if($parts) {
+        $query .= $parts{and_in} .
+		    $parts{sub_start} .
+		    $parts{title_join} .
+		    $parts{title_where_like} .
+		  $parts{end_in} ;
+      } else {
+        $query .= $parts{title_join} .
+		  $parts{title_where_like};
+
+      }
+
+      $parts ++;
+      $frag = shift @ARGV;
+      push(@params, "%$frag%");
+      next;
+   }
+
+   if($frag eq '--description' or $frag eq '-d') {
+      if($parts) {
+        $query .= $parts{and_in} .
+		    $parts{sub_start} .
+		    $parts{description_join} .
+		    $parts{description_match} .
+		  $parts{end_in} ;
+      } else {
+        $query .= $parts{description_join} .
+		  $parts{description_match};
+
+      }
+
+      $parts ++;
+      $frag = shift @ARGV;
+      push(@params, $frag);
+      next;
+   }
+
+   if($frag eq '--anywhere' or $frag eq '-A') {
+      if($parts) {
+        $query .= $parts{and_in} .
+		    $parts{anywhere_block} .
+		  $parts{end_in} ;
+      } else {
+        $query .= $parts{where_in} .
+		    $parts{anywhere_block} .
+		  $parts{end_in};
+
+      }
+
+      $frag = shift @ARGV;
+      push(@params, "%$frag%", $frag, "%$frag%");
+      $parts += 3;
+      next;
+   }
+
+   if($frag eq '--after' or $frag eq '-a') {
+      if($parts) {
+        $query .= $parts{and_after};
+      } else {
+        $query .= $parts{where_after};
+      }
+
+      $parts ++;
+      push(@params, shift @ARGV);
+      next;
+   }
+
+   if($frag eq '--before' or $frag eq '-b') {
+      if($parts) {
+        $query .= $parts{and_before};
+      } else {
+        $query .= $parts{where_before};
+      }
+
+      $parts ++;
+      push(@params, shift @ARGV);
+      next;
+   }
+
    if($frag eq '--newer' or $frag eq '-N') {
       $query_order = $parts{sort_recent};
       next;
@@ -183,17 +312,25 @@ while( defined(my $frag = shift @ARGV) ) {
 }
 
 sub usage {
-  print "find-image options:\n";
+  print "find-image general options:\n";
   print "  --newer  / -N 	sort newer first\n";
   print "  --older  / -O 	sort older first\n";
   print "  --random / -R 	random order results\n";
   print "  --limit  / -L 	smaller sample size\n";
   print "\n";
   print "Searching optins:\n";
-  print "  --tag     TEXT / -t TEXT     and clean tag TEXT\n";
-  print "  --ortag   TEXT / -o TEXT     or clean tag TEXT\n";
-  print "  --taglike TEXT / -l TEXT     and clean tag like %TEXT%\n";
-  print "  --nottag  TEXT / -n TEXT     does not have tag TEXT\n";
+  print "  --anywhere    TEXT / -A TEXT         description or title or tag\n";
+  print "                                          like %TEXT%\n";
+  print "  --tag         TEXT / -t TEXT         and clean tag TEXT\n";
+  print "  --ortag       TEXT / -o TEXT         or clean tag TEXT\n";
+  print "  --taglike     TEXT / -l TEXT         and clean tag like %TEXT%\n";
+  print "  --nottag      TEXT / -n TEXT         does not have tag TEXT\n";
+  print "  --title       TEXT / -T TEXT         and with TEXT in title\n";
+  print "  --description TEXT / -d TEXT         and with TEXT in description\n";
+  print "  --after       DATETIME / -a DATETIME after  'YYYY:MM:DD HH:MM:SS'\n";
+  print "  --before      DATETIME / -b DATETIME before 'YYYY:MM:DD HH:MM:SS'\n";
+  print "\n";
+  print "DATETIME can be shortened to YYYY, or YYYY:MM, etc\n";
   exit;
 }
 
@@ -211,20 +348,33 @@ $sth->execute(@params);
 
 $answer = $sth->fetchall_arrayref;
 
-$parts = 0;
+$count = 0;
 while ( my $row_ref = shift(@$answer) ) {
-  print "Part $parts\n"; $parts ++;
+  print "Match $count\n"; $count ++;
   die if ($parts > 50);
 
-  $_ = 0;
+  $col = 0;
   for my $k (@columns) {
-    print "$k: $$row_ref[$_]   ";
-    $_ ++;
+    print "$k: $$row_ref[$col]   ";
+    if($col == 0) {
+      $id = $$row_ref[$col];
+    }
+    $col ++;
   }
-  print "Tags: " . join("; ", get_tags_for_image($dbh, $$row_ref[0]));
+  print "\n";
+
+  print "Tags: " . join("; ", get_tags_for_image($dbh, $id)) . "\n";
+  if ( $_ = get_title_for_image($dbh, $id) ) {
+    print "Title: $_\n";
+  }
+  if ( $_ = get_description_for_image($dbh, $id) ) {
+    s/\\n/\n/g;
+    print "Description: $_\n";
+  }
+
   print "\n\n";
 }
 
-if ($parts == 0) {
+if ($count == 0) {
   print "No results\n";
 }
