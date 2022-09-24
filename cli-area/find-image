@@ -4,6 +4,8 @@ use warnings;
 use utf8;
 use DBI;
 
+require '/home/eli/photo-gallery/db-funcs.pm';
+
 use vars qw( $rc $count $col $id
 	     $dbh 
 	     %parts
@@ -11,9 +13,6 @@ use vars qw( $rc $count $col $id
 	     $query $query_order $query_limit
 	     $sth $answer @columns
 	     );
-
-$rc = do '/home/eli/photo-gallery/db-funcs.pm';
-if(!defined($rc)) { die "Failed to load db functions file\n"; }
 
 @columns = qw| image_id width height image_path
                image_name image_date components bits |;
@@ -28,8 +27,10 @@ if(!defined($rc)) { die "Failed to load db functions file\n"; }
 	   INNER JOIN `ark_tags` t        ON t.`tag_id`   = i.`tag_id`
    #,
 
-   # takes three params: %TERM% TERM %TERM%
+   # takes four params: %TERM% %TERM% TERM %TERM%
    anywhere_block => q#
+	   SELECT a.`image_id` WHERE a.`image_name` LIKE ?
+           UNION
 	   SELECT l.`image_id` FROM `ark_title` l WHERE l.`title` LIKE ?
            UNION
 	   SELECT d.`image_id` FROM `ark_description` d
@@ -67,6 +68,10 @@ if(!defined($rc)) { die "Failed to load db functions file\n"; }
 
    title_where_like => q#
 	 WHERE l.`title` LIKE ?
+   #,
+
+   filename_where_like => q#
+	 WHERE a.`image_name` LIKE ?
    #,
 
    description_match => q#
@@ -245,6 +250,24 @@ while( defined(my $frag = shift @ARGV) ) {
       next;
    }
 
+   if($frag eq '--filename' or $frag eq '-f') {
+      if($parts) {
+        $query .= $parts{and_in} .
+		    $parts{sub_start} .
+		    $parts{filename_where_like} .
+		  $parts{end_in} ;
+      } else {
+        $query .= $parts{filename_where_like};
+
+      }
+
+      $parts ++;
+      $frag = shift @ARGV;
+      push(@params, "%$frag%");
+      next;
+   }
+
+
    if($frag eq '--anywhere' or $frag eq '-A') {
       if($parts) {
         $query .= $parts{and_in} .
@@ -258,7 +281,7 @@ while( defined(my $frag = shift @ARGV) ) {
       }
 
       $frag = shift @ARGV;
-      push(@params, "%$frag%", $frag, "%$frag%");
+      push(@params, "%$frag%", "%$frag%", $frag, "%$frag%");
       $parts += 3;
       next;
    }
@@ -320,13 +343,14 @@ sub usage {
   print "\n";
   print "Searching optins:\n";
   print "  --anywhere    TEXT / -A TEXT         description or title or tag\n";
-  print "                                          like %TEXT%\n";
+  print "                                          or filename like %TEXT%\n";
   print "  --tag         TEXT / -t TEXT         and clean tag TEXT\n";
   print "  --ortag       TEXT / -o TEXT         or clean tag TEXT\n";
   print "  --taglike     TEXT / -l TEXT         and clean tag like %TEXT%\n";
   print "  --nottag      TEXT / -n TEXT         does not have tag TEXT\n";
   print "  --title       TEXT / -T TEXT         and with TEXT in title\n";
   print "  --description TEXT / -d TEXT         and with TEXT in description\n";
+  print "  --filename    TEXT / -f TEXT         and with TEXT in filename\n";
   print "  --after       DATETIME / -a DATETIME after  'YYYY:MM:DD HH:MM:SS'\n";
   print "  --before      DATETIME / -b DATETIME before 'YYYY:MM:DD HH:MM:SS'\n";
   print "\n";
@@ -341,7 +365,7 @@ print $query;
 $" = ', ';
 print "Binding params: @params\n";
 
-$dbh = dbconnect();
+$dbh = ark::dbconnect();
 $sth = $dbh->prepare($query);
 
 $sth->execute(@params);
@@ -363,11 +387,11 @@ while ( my $row_ref = shift(@$answer) ) {
   }
   print "\n";
 
-  print "Tags: " . join("; ", get_tags_for_image($dbh, $id)) . "\n";
-  if ( $_ = get_title_for_image($dbh, $id) ) {
+  print "Tags: " . join("; ", ark::get_tags_for_image($dbh, $id)) . "\n";
+  if ( $_ = ark::get_title_for_image($dbh, $id) ) {
     print "Title: $_\n";
   }
-  if ( $_ = get_description_for_image($dbh, $id) ) {
+  if ( $_ = ark::get_description_for_image($dbh, $id) ) {
     s/\\n/\n/g;
     print "Description: $_\n";
   }
@@ -378,3 +402,4 @@ while ( my $row_ref = shift(@$answer) ) {
 if ($count == 0) {
   print "No results\n";
 }
+$rc  = $dbh->disconnect;
