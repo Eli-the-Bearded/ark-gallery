@@ -5,29 +5,21 @@ use utf8;
 use DBI;
 use JSON::PP;
 
+require '/home/eli/photo-gallery/db-funcs.pm';
+
 use vars qw( $rc
 	     $dbh $statement
-	     $ark_tag_search_statement
 	     $frag $tag @tags
 	     $num
 	     );
 
 $num = 15;
 
-$rc = do '/home/eli/photo-gallery/db-funcs.pm';
-if(!defined($rc)) { die "Failed to load db functions file\n"; }
+$frag = $ARGV[0] or 'help';
 
-$frag = clean_tag($ARGV[0] or 'help');
+$dbh = ark::dbconnect();
 
-$dbh = dbconnect();
-
-$statement = $dbh->prepare( $ark_tag_search_statement );
-$statement->execute( "%$frag%", $num );
-
-# fetchall_arrayref returns a one element array for every row
-# the map removes the inner arrays
-my $result = $statement->fetchall_arrayref();
-@tags = map { $$_[0] } @$result;
+@tags = ark::tag_fragment_search($dbh, $frag, $num);
 
 $rc  = $dbh->disconnect;
 

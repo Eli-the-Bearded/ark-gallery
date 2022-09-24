@@ -4,20 +4,18 @@ use warnings;
 use utf8;
 use DBI;
 
-use vars qw( $rc
-	     $dbh 
-	     $clean $id
+require '/home/eli/photo-gallery/db-funcs.pm';
+
+use vars qw( $rc $dbh 
+	     $tag $clean $id
 	     );
 
-$rc = do '/home/eli/photo-gallery/db-funcs.pm';
-if(!defined($rc)) { die "Failed to load db functions file\n"; }
-
-$dbh = dbconnect();
+$dbh = ark::dbconnect();
 
 while($tag = shift) {
-  $clean = clean_tag( $tag );
+  $clean = ark::clean_tag( $tag );
 
-  $id = find_or_create_tag($dbh, $tag);
+  $id = ark::find_or_create_tag($dbh, $tag);
 
   print "$id\t$clean\t$tag\n"
 }

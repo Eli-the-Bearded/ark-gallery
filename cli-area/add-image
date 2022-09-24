@@ -8,6 +8,8 @@ use vars qw( $exiftool %exif_data %image_data @tags
 	     $verbose $dryrun
 	   );
 
+require '/home/eli/photo-gallery/db-funcs.pm';
+
 sub usage {
   print "Usage:\n";
   print "   add-image [ options ] image [ image ... ]\n";
@@ -103,6 +105,7 @@ sub parseargs {
 
       if( $arg eq '-dryrun' ) {
         $dryrun = 1;
+	next;
       }
 
       if( $arg eq '-exiftool' ) {
@@ -144,10 +147,12 @@ sub parseargs {
 
       if( $arg eq '-verbose' ) {
         $verbose += 1;
+	next;
       }
 
       if( $arg eq '-vv' ) {
         $verbose += 2;
+	next;
       }
 
       if( $arg eq 'h' or $arg eq '-help' ) {
@@ -245,7 +250,7 @@ sub store {
     return 0;
   }
   print "Calling add_image\n";
-  my $image_id = add_image($dbh, 
+  my $image_id = ark::add_image($dbh, 
     		  { image_path => $image_path,
                     image_name => $name,
                     image_date => $image_data{'Create Date'},
@@ -265,7 +270,7 @@ sub main {
   $verbose = 1;
   $dryrun = 0;
   parseargs();
-  my $dbh = dbconnect();
+  my $dbh = ark::dbconnect();
   for $image_path (@ARGV) {
     varreset();
     read_exif();
@@ -277,8 +282,8 @@ sub main {
     }
     store($dbh);
   }
+  $dbh->disconnect;
 }
 
-my $rc = do './db-funcs.pm';
-if(!defined($rc)) { die "Failed to load db functions file $@\n"; }
+
 main();
