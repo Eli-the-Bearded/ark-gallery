@@ -5,14 +5,12 @@ use utf8;
 use DBI;
 use JSON::PP;
 
-use vars qw( $rc
+use vars qw( $rc $cgi
 	     $dbh $statement
-	     $ark_tag_search_statement
-	     $frag $tag @tags
+	     $frag $num $tag @tags
 	     );
 
-$rc = do '/home/eli/photo-gallery/db-funcs.pm';
-if(!defined($rc)) { die "Content-Type: text/plain\n\nFailed to load db functions file\n"; }
+require '/home/eli/photo-gallery/db-funcs.pm';
 
 if (     defined($ENV{'REQUEST_METHOD'})
      and        ($ENV{'REQUEST_METHOD'}  eq 'POST'  )
@@ -21,6 +19,7 @@ if (     defined($ENV{'REQUEST_METHOD'})
    ) {
         my $size = $1;
         if ($size < 1 or $size > 2000) { exit 0; }
+	$cgi = 1;
 
 	my $data;
 	read(STDIN, $data, $size);
@@ -37,27 +36,27 @@ if (     defined($ENV{'REQUEST_METHOD'})
 	}
 }
 
-$frag = clean_tag($ARGV[0] or 'help');
+$frag = ($ARGV[0] or 'help');
+$num  = 10;
 
-$dbh = dbconnect();
+$dbh = ark::dbconnect();
 
-$statement = $dbh->prepare( $ark_tag_search_statement );
-$statement->execute( "%$frag%", 10 );
-# fetchall_arrayref returns a one element array for every row
-# the map removes the inner arrays
-my $result = $statement->fetchall_arrayref();
-@tags = map { $$_[0] } @$result;
-
+@tags = ark::tag_fragment_search($dbh, $frag, $num);
 $rc  = $dbh->disconnect;
-print "Content-Type: text/plain; charset=UTF-8\n";
-print "\n";
-print encode_json(\@tags);
-print "\n";
 
+if($cgi) {
+  print "Content-Type: text/plain; charset=UTF-8\n";
+  print "\n";
+  print encode_json(\@tags);
+  print "\n";
+} else {
+  $" = "\n\t"; # list separator for quoted arrays
+  print "Top $num matches:\n\t@tags\n";
+}
 __END__
 REQUEST_METHOD=POST
 CONTENT_LENGTH=179
-CONTENT_TYPE=multipart/form-data; boundary=---------------------------299144911727878228763415194987
+CONTENT_TYPE="multipart/form-data; boundary=---------------------------299144911727878228763415194987"
 
 -----------------------------299144911727878228763415194987
 Content-Disposition: form-data; name="search"
