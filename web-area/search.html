@@ -18,32 +18,32 @@ Input { margin: 0.5em; }
 <body>
 <h1>Image Search</h1>
 <div>
-<form action="/action/">
+<form action="results.cgi">
 <table>
 <tr><td></td><td colspan=2><input type=submit value=Search></td></tr>
-<tr><td><label for=loosetag>Loose tags?</label></td>
-    <td><input type=checkbox value=yes id=loosetag name=loosetag></td>
-    <td>Enables tag substring matches</td></tr>
+<tr>
 
 <tr><td><label for=limit>Per page limit</label></td>
     <td colspan=2><input type=number value=50 id=limit name=limit size=3></td></tr>
 
-<tr><td><label for=outmode>Result type</label></td>
-    <td colspan=2><select id=outmode name=outmode>
-    <option value=all>All</option>
-    <option value=short>Short</option>
-    <option value=image>Image</option>
-    <option value=images>Images</option>
-    <option value=thumbs>Thumbs</option>
+    <tr><td><label for=sorting>Sort method</label></td>
+    <td colspan=2><select id=sorting name=sort>
+    <option value=newer selected>Newer</option>
+    <option value=older>Older</option>
+    <option value=random>Random</option>
     </select></td></tr>
 
-<tr><td><label for=anywhere0>Anywhere</label></td>
+<tr><td><label for=anywhere0>Tags, title, description, or filename</label></td>
     <td><span onClick="add('anywhere');">[+]</span></td>
     <td><input type=text size=30 id=anywhere0 name=anywhere0></td></tr>
 
-<tr><td><label for=tag0>Tags</label></td>
+<tr><td><label for=tag0>Exact Tags</label></td>
     <td><span onClick="add('tag');">[+]</span></td>
     <td><input type=text size=30 id=tag0 name=tag0></td></tr>
+
+<tr><td><label for=tag0>Loose Tags</label></td>
+    <td><span onClick="add('frag');">[+]</span></td>
+    <td><input type=text size=30 id=frag0 name=frag0></td></tr>
 
 <tr><td><label for=title0>Title</label></td>
     <td><span onClick="add('title');">[+]</span></td>
@@ -53,16 +53,21 @@ Input { margin: 0.5em; }
     <td><span onClick="add('desc');">[+]</span></td>
     <td><input type=text size=30 id=desc0 name=desc0></td></tr>
 
-<tr><td><label for=nowhere0>No where</label></td>
-    <td><span onClick="add('nowhere');">[+]</span></td>
-    <td><input type=text size=30 id=nowhere0 name=nowhere0 value='hidethese'></td></tr>
+<tr><td><label for=name0>Filename</label></td>
+    <td></td>
+    <td><input type=text size=30 id=name0 name=name0></td></tr>
+
 <tr><td><label for=xtag0>Exclude tag</label></td>
     <td><span onClick="add('xtag');">[+]</span></td>
-    <td><input type=text size=30 id=xtag0 name=xtag0></td></tr>
+    <td><input type=text size=30 id=xtag0 name=xtag0 value='hidethese'></td></tr>
 
-<tr><td><label for=date>Date substring</label></td>
+<tr><td><label for=date>Before (<code>YYYY:MM:DD HH:MM:SS</code> or prefix of that)</label></td>
     <td></td>
-    <td><input type=text size=30 id=date name=date></td></tr>
+    <td><input type=text size=30 id=before name=before></td></tr>
+
+<tr><td><label for=date>After (same format as Before)</label></td>
+    <td></td>
+    <td><input type=text size=30 id=after name=after></td></tr>
 
 <tr><td></td><td colspan=2><input type=submit value=Search></td></tr>
 </table>
