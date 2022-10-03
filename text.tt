@@ -1,0 +1,14 @@
+Found [% total %] results,
+
+[% FOREACH res IN results %]
+[% res.n %]: [% res.file %]
+image: [% baseurl %][% res.image %]
+thumb: [% baseurl %][% res.thumb %]
+
+[% FOREACH met IN res.meta %][% met.name %]: [% met.value %]
+[% END %][%# close met foreach %]
+[% IF res.has_tags %]  Tags:
+[% FOREACH tag IN res.tags %]        "[% tag.link %]" => [% tag.display %]
+[% END %][%# close tag foreach %]
+[% ELSE %][%# has_tags %]No Tags.
+[% END %][%# close tag if %][% END %][%# close res foreach %]

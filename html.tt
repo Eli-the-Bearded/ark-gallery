@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html><head>
+<title>Search results [% title %]</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<script>
+function ri(i,d){ var p=document.getElementById(i);p.style.transform='rotate('+d+'deg)'; }
+</script>
+<style type="text/css"><!--
+Body {background:white; color:black;}
+H1 {font-weight:bold; font-size:18pt;}
+H2 {font-weight:normal; font-size:18pt;}
+Table {width:95vw; background:lightgrey;}
+td.title {font-weight:bold;}
+th {font-weight:normal; text-align:left; margin:2pt; width:20vw;}
+.info div {font-size:smaller;}
+.imgtr {background:white;}
+td.imgtr div {width:300px; height:300px; display:flex; align-items:center; margin-left: 50px;}
+th.imgtr span {font-size:24pt;}
+:link {color:blue;} 
+:link:hover {color:red;}
+:link:visited {color:red;}
+--></style></head><body>
+<h1>Search results: [% title %]</h1>
+<div class="info">
+<div>Found [% total %] results, display limited to [% limit %] starting at [% offset %].</div>
+<div class="info_links"><ul>
+[% IF link.prev %]<li><a href="[% baseurl %][% link.prev %]">Previous [% limit %]</a></li>[% END -%]
+[% IF link.next %]<li><a href="[% baseurl %][% link.next %]">Next [% limit %]</a></li>[% END -%]
+<li><a href="[% baseurl %][% new_search %]">New Search</a></li>
+</ul></div>
+[% FOREACH s IN searching %]<div>[% s.field %]: [% s.rule %]</div>[% END %]
+</div>
+
+<div class="main">[% FOREACH res IN results %]
+<table><tbody><tr><th class="imgtr" width="200px"><a name="r[% res.n %]">[% res.n %]</a><br>[% res.file %]<br><span onclick='ri("ir[% res.n %]",270);'>&#x21c7;</span> <span onclick='ri("ir[% res.n %]",0);'>&#x21c8;</span> <span onclick='ri("ir[% res.n %]",90);'>&#x21c9;</span> <span onclick='ri("ir[% res.n %]",180);'>&#x21ca;</span></th><td class="imgtr"><div><a href="[% baseurl %][% res.image %]"><img src="[% baseurl %][% res.thumb %]" alt="thumbnail" id="ir[% res.n %]"></a></div></td></tr>
+[% FOREACH met IN res.meta %]
+<tr><th class="meta [% met.name %]">[% met.name %]</th><td class="meta [% met.name %]">[% IF met.link %]<a href="[% baseurl %][% met.link %]">[% END -%][% met.value %][% IF met.link %]</a>[% END -%]</td></tr>
+[% END %][%# close met foreach %]
+[% IF res.has_tags %]<!-- tag data -->
+<tr><th class="tag">tag</th><td class="tag">
+[% FOREACH tag IN res.tags %]
+<a href="[% baseurl %][% tag_search %][% tag.link %]">[% tag.display %]</a>
+[% END %][%# close tag foreach %]
+</td></tr>
+[% ELSE %][%# has_tags %]
+<!-- no tags -->
+[% END %][%# close tag if %]
+</tbody></table>[% END %][%# res met foreach %]
+</div>[%# close div main %]
+
+<div class="footer">
+<div class="info_links">
+<div>version [% search_version %]</div>
+</div></div>
+
+</body></html>

@@ -1,22 +1,37 @@
 #!/usr/bin/perl
+# These are part of standard perl distrib
 use strict;
 use warnings;
 use utf8;
-use DBI;
 use Digest::MD5 qw( md5_base64 );
-# part of standard perl distrib and much faster than Data::Dumper
 use Storable qw/ store_fd retrieve /;
 
-require '/home/eli/photo-gallery/web-area/bgformlib.pm';
-require '/home/eli/photo-gallery/db-funcs.pm';
+$main::root = '/home/eli/photo-gallery'; # see also /CONFIGURATION/
 
-use vars qw( $cgi $url $limit $offset $baseurl
+# Ubuntu packages: libclass-dbi-perl libclass-dbi-mysql-perl
+use DBI;
+
+# Ubuntu package: libtemplate-perl
+use Template;
+
+# Ubuntu package: libjson-xs-perl
+use JSON::XS;
+
+# part of this package, perl package name FL::
+require "$main::root/web-area/bgformlib.pm";
+# part of this package, perl package name ark::
+require "$main::root/db-funcs.pm";
+
+# declare globals, many set in &init_vars();
+use vars qw( $cgi $url $limit $offset
 	     $rc $count $col $id
 	     $dbh $cache $cbase
 	     %parts
 	     $parts @params $sparam
+	     $baseurl $searchuri $template_dir
 	     $query $query_order $query_limit
-	     $sth $answer @columns
+	     $sth $answer @columns %cnum
+	     $version
 	     );
 
 # at top for more(1) or less(1)
@@ -30,6 +45,8 @@ sub usage {
   print "  --older  / -O 	sort older first\n";
   print "  --random / -R 	random order results\n";
   print "  --limit  / -L 	smaller sample size\n";
+  print "  --json               output JSON instead of text or html\n";
+  print "  --html               output HTML instead of text (cgi default)\n";
   print "\n";
   print "Searching optins:\n";
   print "  --anywhere    TEXT / -A TEXT         description or title or tag\n";
@@ -106,8 +123,29 @@ sub main {
 
 # does what it says on the tin
 sub init_vars {
+  $version = 'b, 2022-10-03';
 
+
+  # mostly checked for TRUE, but will be set to "HTML" if cli
+  # asks for that or "JSON" if that's requested
   $cgi = (exists($ENV{GATEWAY_INTERFACE}) and length($ENV{GATEWAY_INTERFACE}));
+
+  #############################
+  ## CONFIGURATION   begin {
+  #############################
+
+  # no trailing slash
+  $baseurl   = 'https://ark.qaz.wtf';
+
+  # starting slash, no ?
+  $searchuri = '/results.cgi';
+
+  # location to find text.tt and html.tt
+  $template_dir = $main::root;
+
+  #############################
+  ## } end   CONFIGURATION
+  #############################
 
   # fragments of SQL for building a search query [
   %parts = (
@@ -232,6 +270,8 @@ sub init_vars {
 
   @columns = qw| image_id width height image_path
                  image_name image_date components bits |;
+
+  map { $cnum{$columns[$_]} = $_ } (0..@columns);
 
   # Note that I assume a single purpose computer here and
   # I don't worry about race conditions. Cache could easily
@@ -431,6 +471,16 @@ sub parse_argv {
       next;
    }
 
+   if($frag eq '--html') {
+      $cgi = 'HTML';
+      next;
+   }
+
+   if($frag eq '--json') {
+      $cgi = 'JSON';
+      next;
+   }
+
    if($frag eq '--limit' or $frag eq '-L') {
       $query_limit = $parts{limit};
       next;
@@ -478,11 +528,11 @@ sub cgi_to_argv {
   if ($ENV{REQUEST_URI} =~ m:^(/\w[\w./]+):) {
     $url = "$1?";
   } else {
-    $url = '/a/?';
+    $url = "$searchuri?";
   }
-  $baseurl = $url;
+  # $baseurl = $url;
 
-  print "Content-Type: text/html\n\n";
+  print "Content-Type: text/html; charset=UTF-8\n\n";
   open(STDERR, ">&STDOUT")     || safedie "Can't dup stdout";
   binmode(STDERR, ":utf8");
   binmode(STDOUT, ":utf8");
@@ -533,8 +583,14 @@ sub cgi_to_argv {
   paramloop(\%in, 'anywhere', '--anywhere');
 
   # case insensitive match
-  if (defined($tainted = lc($in{sort}))) {
+  if (defined($tainted = lc($in{sort} or ''))) {
     if($tainted =~ /^(newer|older|random)/) {
+      push(@ARGV, "--$1");
+      $url .= 'sort=' . $1 . '&';
+    }
+  }
+  if (defined($tainted = lc($in{want} or ''))) {
+    if($tainted =~ /^(json)/) {
       push(@ARGV, "--$1");
       $url .= 'sort=' . $1 . '&';
     }
@@ -618,70 +674,148 @@ sub output_start {
   }
 } # end &output_start 
 
+
 sub output_finish {
-  if ($count == 0) {
-    print "No results\n";
-  } elsif ($cgi) {
-    print scalar(@$answer) . " results total<br/>\n";
-    $offset += $limit;
-    print "Next: $url&offset=$offset\n";
-  }
+  1;
 } # end &output_finish 
 
-# CGI or command line
+
+# CGI or command line: collects data into a hash, then uses
+# a JSON encoder or a text or html template
 sub show_answer {
   $count = $offset; # zero unless in cgi pagination
+  my $page;
+  my $tt = Template->new({
+              INCLUDE_PATH => $template_dir,
+	      INTERPOLATE  => 1,
+	   }) or safedie($Template::ERROR);
+
+  my %tdata = (
+      total          => scalar @{$answer},
+      offset         => $offset,
+      limit          => $limit,
+      search_version => $version,
+  );
+
+  # TODO: summarize search in parse_args as array
+  # $tdata{searching} = [
+  #               { field => 'title',     rule => 'img_6258' },
+  #               { field => 'excluding', rule => 'hidethese' },
+  # debug:        { field => 'Cache id',  rule => 'eKbagQNu5JmoQia8dDzHLA' },
+  #            ];
+
+  if ($cgi) {
+    $tdata{title}      = '';	# FIXME: build page title in parse_args
+    $tdata{baseurl}    = $baseurl;
+    $tdata{new_search} = $searchuri;
+    $tdata{tag_search} = "$searchuri?tag0=";
+
+    if ($offset) {
+      $tdata{link}{prev} = "$url&offset=" . ($offset - $limit);
+    }
+    if ($offset + $limit < $tdata{total}) {
+      $tdata{link}{next} = "$url&offset=" . ($offset + $limit);
+    }
+  } else {
+    $tdata{title}      = $sparam;
+  }
+
   while ( my $row_ref = ${$answer}[$count] ) {
     if ($cgi and $limit == ($count - $offset)) { last; }
-    print "Match $count\n"; $count ++;
-    if($cgi) { print "<br/>"; }
-    if($cgi) {
-      my $ipath = $$row_ref[3]; # 3 is image_path, FIXME
+    
+    my $ipath = $$row_ref[$cnum{image_path}];
 
-      # This is based on how I "alias" directories in apache
-      $ipath =~ s,^/data/,/po,; 
+    $tdata{results}[$count]{n} = $count;
+    # This is based on how I "alias" directories in apache
+    $ipath =~ s,^/data/,/po,; 
 
-      # I have .100 and .200 thumbnails, but I really only ever
-      # use larger. The .200 files serve as image/jpeg, and are
-      # 200 pixels tall, unlimited width, preserving aspect ratio
-      # from originals. This is a panorama friendly thumbnail.
-      my $tpath = $ipath;
-      $tpath =~ s,^/poi,/pot,;
-      $tpath =~ s/[.][^.]*$/.200/;
+    $tdata{results}[$count]{image} = $ipath;
 
-      print qq(<a href="$ipath"><img src="$tpath" height=200></a><br/>\n);
-    }
+    # The .200 files serve as image/jpeg, and are 200 pixels tall,
+    # unlimited width, preserving aspect ratio from originals.
+    # This is a panorama friendly thumbnail.
+    $ipath =~ s,^/poi,/pot,;
+    $ipath =~ s/[.][^.]*$/.200/;
 
-    # temp during devel
-    die if ($parts > 50);
+    $tdata{results}[$count]{thumb} = $ipath;
 
-    $col = 0;
+    $tdata{results}[$count]{meta} = [ ];
+    my $loop = 0;
+    my $value;
     for my $k (@columns) {
-      print "$k: $$row_ref[$col]   ";
-      if($col == 0) {
-	$id = $$row_ref[$col];
+      if($cgi) {
+        $value = FL::safestr($$row_ref[$loop]);
+      } else {
+        $value = $$row_ref[$loop];
       }
-      $col ++;
-    }
-    if($cgi) { print "<br/>"; }
-    print "\n";
 
-    print "Tags: " . join("; ", ark::get_tags_for_image($dbh, $id)) . "\n";
-    if($cgi) { print "<br/>"; }
-    if ( $_ = ark::get_title_for_image($dbh, $id) ) {
-      print "Title: $_\n";
-      if($cgi) { print "<br/>"; }
-    }
-    if ( $_ = ark::get_description_for_image($dbh, $id) ) {
-      s/\\n/\n/g;
-      print "Description: $_\n";
-      if($cgi) { print "<br/>"; }
+      my $meta_hash = { name => $k,
+                        value => $value };
+
+      if($loop == $cnum{image_date}) {
+        my $date = $$row_ref[$loop];
+	if($date =~ /^(\d\d\d\d)\D(\d\d)\D(\d\d)\b/) {
+	  $date = "$1:$2:$3";
+	  $date = "before=$date+23:23:59.9&after=$date+00:00:00";
+	  $$meta_hash{link} = "$searchuri?$date";
+	}
+      }
+
+      if($loop == $cnum{image_id}) {
+	$tdata{results}[$count]{file} = $id = $$row_ref[$loop];
+      }
+
+      push (@{$tdata{results}[$count]{meta}}, $meta_hash);
+      $loop ++;
     }
 
-    if($cgi) { print "<hr/>"; }
-    print "\n\n";
+    my @tags = ark::get_tags_for_image($dbh, $id);
+    if (@tags) {
+      $tdata{results}[$count]{tags}     = [ ];
+      $tdata{results}[$count]{has_tags} = 1;
+
+      for $loop (@tags) {
+        if($cgi) {
+	  $value = FL::urlstr($loop);
+	} else {
+	  $value = ark::clean_tag($loop);
+	}
+        push (@{$tdata{results}[$count]{tags}}, { display => $loop,
+	                                          link    => $value });
+      }
+    }
+
+    if ( $value = ark::get_title_for_image($dbh, $id) ) {
+      if($cgi) {
+	$value = FL::urlstr($value);
+      }
+      push (@{$tdata{results}[$count]{title}}, { name => 'title',
+                                                 value => $value });
+    }
+    if ( $value = ark::get_description_for_image($dbh, $id) ) {
+      if ($cgi) {
+	$value = FL::urlstr($value);
+        $value =~ s/\\n/<br>/g;
+      } else {
+        $value =~ s/\\n/\n/g;
+      }
+      push (@{$tdata{results}[$count]{title}}, { name => 'description',
+                                                 value => $value });
+    }
+
+    $count ++;
+  } # while row_ref = answer
+
+  if ($cgi eq 'JSON') {
+    $page = encode_json(\%tdata);
+  } elsif ($cgi) {
+    $tt->process('html.tt', \%tdata, \$page) or safedie $tt->error();
+  } else {
+    $tt->process('text.tt', \%tdata, \$page) or safedie $tt->error();
   }
+  print $page;
 } # end &show_answer 
+
 
 # freeze a Storable file
 sub save_cache {
