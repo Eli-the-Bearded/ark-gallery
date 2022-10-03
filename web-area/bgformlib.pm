@@ -350,6 +350,7 @@ sub urlstr($) {
 
   if(!defined($str)) { return ''; }
   $str =~ s/%/%25/g;
+  $str =~ s/\+/%2b/g;
   $str =~ s/\?/%3f/g;
   $str =~ s/&/%26/g;
   $str =~ s/</%3c/g;
