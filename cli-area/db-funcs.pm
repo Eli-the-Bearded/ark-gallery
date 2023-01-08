@@ -206,6 +206,20 @@ $find_exif_value_statement = q!
         SELECT `exif_value_id` FROM `ark_exif_values` WHERE `exif_value` = ?;
 !;
 
+# get the ids for an an image_name
+#	PARAMS: image_name
+#	RETURNS: image_id (can be multiple row)
+$find_image_ids_for_names_statement = q!
+        SELECT `image_id` FROM `ark_images` WHERE `image_name` = ?;
+!;
+
+# get the id for an an image_path
+#	PARAMS: image_path
+#	RETURNS: image_id (single row)
+$find_image_ids_for_paths_statement = q!
+        SELECT `image_id` FROM `ark_images` WHERE `image_path` = ?;
+!;
+
 #############################################################
 # Psuedo-constants
 
@@ -229,6 +243,8 @@ sub EXIF_NAME() { return $exif_name_statement; }
 sub EXIF_VALUE() { return $exif_value_statement; }
 sub FIND_EXIF_NAME() { return $find_exif_name_statement; }
 sub FIND_EXIF_VALUE() { return $find_exif_value_statement; }
+sub FIND_IMAGE_IDS_FOR_NAME() { return $find_image_ids_for_names_statement; }
+sub FIND_IMAGE_IDS_FOR_PATH() { return $find_image_ids_for_paths_statement; }
 sub EXIFOTHER() { return $exifother_statement; }
 
 #############################################################
@@ -573,7 +589,7 @@ sub get_tags_for_image {
   my $result = $tags_sth->fetchall_arrayref();
 
   return (map { $$_[0] } @$result);
-}
+} # end &get_tags_for_image
 
 # get the title for an image
 #	PARAMS: dbh, image_id
@@ -611,6 +627,7 @@ sub tag_fragment_search {
   my $dbh   = shift;
   my $frag  = shift;
   my $limit = shift;
+  my @tags;
 
   $frag = clean_tag($frag);
   my $sth = $dbh->prepare( $tag_search_statement );
@@ -620,6 +637,41 @@ sub tag_fragment_search {
   # the map removes the inner arrays
   my $result = $sth->fetchall_arrayref();
   @tags = map { $$_[0] } @$result;
-}
+} # end &tag_fragment_search
+
+# image_path will be always be unique
+# sources
+sub image_ids_from_path {
+  my $dbh   = shift;
+  my $path  = shift;
+  my @ids;
+
+  my $sth = $dbh->prepare( $find_image_ids_for_paths_statement );
+  $sth->execute( $path );
+  my $result = $sth->fetchall_arrayref();
+  @ids = map { $$_[0] } @$result;
+} # end &image_ids_from_path
+
+# image_name will be unique for images taken from flickr, but may not for other
+# sources
+sub image_ids_from_name {
+  my $dbh   = shift;
+  my $name  = shift;
+  my @ids;
+
+  my $sth = $dbh->prepare( $find_image_ids_for_names_statement );
+  $sth->execute( $name );
+  my $result = $sth->fetchall_arrayref();
+  @ids = map { $$_[0] } @$result;
+} # end &image_ids_from_name
+
+# get the current date as the database knows it
+sub current_date {
+  my $dbh   = shift;
+  my $sth = $dbh->prepare( 'select NOW();' );
+  $sth->execute( );
+  my $result = $sth->fetchall_arrayref();
+  return $$result[0][0];
+} # end &current_date
 
 1;
