@@ -1,0 +1,113 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use utf8;
+use DBI;
+
+use vars qw( $rc $dryrun
+             $dbh 
+             @tags @images @labels $lookup $tag_date
+            );
+
+$dryrun = 0;
+
+while (@ARGV) {
+  my $arg = shift(@ARGV);
+
+  if ($arg eq '-t' or $arg eq '--tag') {
+    my $tag = shift(@ARGV); 
+    die "Missing tag\n" unless defined $tag;
+    push(@tags, $tag);
+  }
+  if ($arg eq '-d' or $arg eq '--dryrun') {
+    $dryrun = 1;
+  }
+  if ($arg eq '-i' or $arg eq '--image-id') {
+    $lookup = 'id';
+  }
+  if ($arg eq '-p' or $arg eq '--image-path') {
+    $lookup = 'path';
+  }
+  if ($arg eq '-n' or $arg eq '--image-name') {
+    $lookup = 'name';
+  }
+  if ($arg eq '--') {
+    @labels = @ARGV;
+    undef(@ARGV);
+  }
+
+  if ($arg eq '-h' or $arg eq '--help') {
+    print "$0: usage\n";
+    print "   add-image-tags [ options ] -- [ label ] \n";
+    print "   -t  --tag 'Tag Value'        # tag to add, can be used multiple times\n";
+    print "   -d  --dryrun                 # does not write any tags\n";
+    print "   -i  --image-id               # labels are image ids\n";
+    print "   -n  --image-name             # labels are image names\n";
+    print "   -p  --image-path             # labels are image paths\n";
+    print "\n";
+    print "For image_id 13283, image_name is 1357902101 (flickr id) and\n";
+    print "image_path is /data/i/21/01/1357902101.jpg\n";
+    print "Path and image id are guaranteed unique. Names usually are unique.\n";
+    exit 0;
+  }
+}
+
+binmode(STDOUT, ':utf8');
+
+
+if (@tags == 0) {
+  die "No tags, nothing to do (did you want --help?)\n";
+}
+if (@labels == 0) {
+  die "No labels, nothing to do (did you want --help?)\n";
+}
+if (!defined ($lookup)) { 
+  die "Need a label lookup method, eg --image-name\n";
+}
+if ($dryrun) {
+  local $" = ', ';
+  print "Dry run of add-image-tags\n";
+  print "Adding @tags\n";
+  print "To ${lookup}(s) @labels\n";
+}
+
+$rc = do '/home/eli/photo-gallery/db-funcs.pm';
+if(!defined($rc)) { die "Failed to load db functions file\n"; }
+
+$dbh = ark::dbconnect();
+$tag_date = ark::current_date($dbh);
+
+for my $label (@labels) {
+  my $image_id;
+
+  if ($lookup eq 'id') {
+    $image_id = $label;
+  } elsif ($lookup eq 'name') {
+    my @id_list = ark::image_ids_from_name($dbh, $label);
+
+    if (@id_list != 1) {
+      print "Whoa, skipping. Found " . (0+@id_list) . " ids for $lookup $label\n";
+      next;
+    }
+    $image_id = $id_list[0];
+  } elsif ($lookup eq 'path') {
+    my @id_list = ark::image_ids_from_path($dbh, $label);
+
+    if (@id_list != 1) {
+      print "Whoa, skipping. Found " . (0+@id_list) . " ids for $lookup $label\n";
+      next;
+    }
+    $image_id = $id_list[0];
+  } else {
+    die "Internal error: no method $lookup defined for labels\n";
+  }
+
+  if($dryrun) {
+    local $" = '; ';
+    print "add_tags_to_image(\$dbh, $image_id, $tag_date, [@tags]);\n";
+  } else {
+    ark::add_tags_to_image($dbh, $image_id, $tag_date, [@tags]);
+  }
+
+} # for label
+
