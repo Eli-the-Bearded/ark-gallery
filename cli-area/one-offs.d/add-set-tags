@@ -1,0 +1,68 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+use utf8;
+use DBI;
+
+use vars qw( $rc $debug
+             $dbh 
+             $set_tags_file $stf_line $set_dir $set_file $sf_line $set_id
+             $image_name $image_date
+            );
+
+$debug = 0;
+
+# format: set_id <tab> comma separated list,of tags
+$set_tags_file = shift;
+
+$set_dir = "$ENV{HOME}/flickr/";
+# set_file will be $set_dir/set_$set_id
+# set_file format:
+#  image_name <tab> image_date <tab> unknown <tab> space separated tag list <tab> title
+
+$rc = do '/home/eli/photo-gallery/db-funcs.pm';
+if(!defined($rc)) { die "Failed to load db functions file\n"; }
+
+$dbh = ark::dbconnect();
+
+binmode(STDOUT, ':utf8');
+# binmode(DATA, ':utf8');
+
+open(SETDATA, '<:utf8', $set_tags_file) || die "Need set_tags_file\n";
+
+while(defined($stf_line = <SETDATA>)) {
+  my $tags;
+  my @tags;
+  chomp $stf_line; 
+  ($set_id, $tags) = split(/\t/, $stf_line);
+  $tags =~ s/^\s*//;
+  $tags =~ s/\s*$//;
+  $tags =~ s/\s*,\s*/,/g;
+
+  @tags = split(/,/, $tags);
+
+  $set_file = "$set_dir/set_$set_id";
+  open(SETFILE, '<:utf8', $set_file) || die "Missing set file $set_file\n";
+
+  while(defined($sf_line = <SETFILE>)) {
+    ($image_name, $image_date, undef) = split(/\t/, $sf_line);
+
+    my @id_list = ark::image_ids_from_name($dbh, $image_name);
+
+    if (@id_list != 1) {
+      print "Whoa. Found " . (0+@id_list) . " ids for $image_name\n";
+      next;
+    }
+    my $image_id = $id_list[0];
+
+    if($debug) {
+      local $" = '; ';
+      print "add_tags_to_image(\$dbh, $image_id, $image_date, [@tags]);\n";
+    }
+    ark::add_tags_to_image($dbh, $image_id, $image_date, [@tags]);
+
+  } # while set file line
+  close SETFILE;
+} # while set_tags file line
+close SETDATA;
+
